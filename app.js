@@ -2,6 +2,7 @@ let err = false;
 const http = require('http');
 const express = require('express');
 const fs = require('fs');
+const bcrypt = require("bcrypt");
 const path = require('path');
 const multer = require('multer');
 const mysql = require('mysql');
@@ -338,38 +339,45 @@ app.get('/passport/input', (req,res) => {
     // } else {
     //     alert('Ошибка: вы не заполнили одно из обязательных полей!');
     // }
-    
+
     app.post('/reg', (req, res) => {
         if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.userphone != '' && req.body.age != '') {
-            connection.query(
-                "INSERT INTO users (name, vkid,  password, Phone, gender, info, emoji, date, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                [[req.body.username], [req.body.vkid], [req.body.userpass], [req.body.userphone], [req.body.gender], [req.body.text], [req.body.avatar], [req.body.age], [req.body.promo]],
-                (err, data, fields) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    connection.query(
-                        "SELECT * FROM users WHERE vkid=? and password=?",
-                        [[req.body.vkid], [req.body.userpass]],
-                        (err, data, fields) => {
-                            if (err) {
-                                console.log(err);
-                            }
-                            console.log(data);
-                            req.session.admin = data[0].private;
-                            req.session.name = data[0].name;
-                            req.session.vkid = data[0].vkid;
-                            req.session.id = data[0].id;
-                            req.session.emoji = data[0].emoji;
-                            req.session.text = data[0].info;
-                            req.session.tel = data[0].phone;
-                            req.session.gender = data[0].gender;
-                            req.session.auth = true;
-                            res.redirect('/');
+            let salt = 10;
+            let password = req.body.userpass;
+            bcrypt.hash(password, salt, (err, hash) => {
+                console.log(hash);
+                connection.query(
+                    "INSERT INTO users (name, vkid,  password, Phone, gender, info, emoji, date, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    [[req.body.username], [req.body.vkid], [hash], [req.body.userphone], [req.body.gender], [req.body.text], [req.body.avatar], [req.body.age], [req.body.promo]],
+                    (err, data, fields) => {
+                        if (err) {
+                            console.log(err);
                         }
-                    );
-                }
-            );
+                        
+                        connection.query(
+                            "SELECT * FROM users WHERE vkid=? and password=?",
+                            [[req.body.vkid], [hash]],
+                            (err, data, fields) => {
+                                if (err) {
+                                    console.log(err);
+                                }
+                                console.log(data);
+                                req.session.admin = data[0].private;
+                                req.session.name = data[0].name;
+                                req.session.vkid = data[0].vkid;
+                                req.session.id = data[0].id;
+                                req.session.emoji = data[0].emoji;
+                                req.session.text = data[0].info;
+                                req.session.tel = data[0].phone;
+                                req.session.gender = data[0].gender;
+                                req.session.auth = true;
+                                res.redirect('/');
+                            }
+                        );
+                    }
+                   
+                );
+            });
         } else {
             active = 'pass';
             res.render('reg', {
@@ -383,21 +391,28 @@ app.get('/passport/input', (req,res) => {
                 'gender': req.session.gender,
                 'auth': req.session.auth,        
                 'act': active,
-            }
-            );
+            });
         }
     });
+
     app.post('/login', (req, res) => {
         let error = false;
+        let salt = 10;
+        let password = req.body.pass;
+        bcrypt.hash(password, salt, (err, hash) => {
+        console.log(hash);
         connection.query(
-            "SELECT * FROM users WHERE vkid=? and password=?",
-            [[req.body.vkid], [req.body.pass]],
+            "SELECT * FROM users WHERE vkid=?",
+            [[req.body.vkid]],
             (err, data, fields) => {
                 if (err) {
                     console.log(err);
                 }
+                bcrypt.compare(password, data[0].password, (err, result) => {
+                    console.log(result);
+                
                 console.log(data);
-            if(data.length == 1) {
+            if(result) {
                 console.log(data[0].id);
                 req.session.admin = data[0].private;
                 req.session.name = data[0].name;
@@ -427,6 +442,8 @@ app.get('/passport/input', (req,res) => {
             }
             }
         );
+        });
+    });
     });
     app.post('/logout', isAuth, (req, res) => {
         req.session.auth = false;  

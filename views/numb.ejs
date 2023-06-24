@@ -5,7 +5,7 @@
     </h2>
     <ul>
         <% for(let i = 0; i < numb.length; i++) { %>
-        <li> <%=data[numb[i].cat_id - 1].name%>
+        <li> <%=data[i].name%> 
         <br>
         <form action="/dropcat" method="post" id="delete">
             <input type="hidden" value="<%=numb[i].cat_id%>" name="plc">
@@ -19,8 +19,8 @@
     <input type="hidden" value="<%=params%>" name="id">
     <div class="form-group">
         <select name="catID" id="catID" aria-placeholder="Категория">
-            <% for(let i = 0; i < data.length; i++) {%>
-            <option value="<%=data[i].id%>"><%=data[i].name%></option>
+            <% for(let i = 0; i < vars.length; i++) {%>
+            <option value="<%=vars[i].id%>"><%=vars[i].name%></option>
             <%}%>
         </select>
     </div>

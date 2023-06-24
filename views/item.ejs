@@ -4,17 +4,22 @@
 </a>    
 <div class="area">
         <h1><%= Items[0].title %></h1>
-        <% for(let i = 0; i < thisa.length; i++){%>
-            <h3 class="section__category" id="newid">
-                <%=thisa[i].name%>
-            </h3>
-            <script>
-                let newid = document.getElementById('newid');
-                newid.style.backgroundColor = '<%=thisa[i].color%>';
+        <span id="content"></span>
+        <script> 
+        let array = JSON.parse('<%- JSON.stringify(thisa) %>');
+        for(let i = 0; i < '<%=thisa.length%>'; i++){
+            console.log(array);
+            let content = document.getElementById('content');
+            let h3 = document.createElement('h3');
+            h3.classList.add('section__category');
+            h3.style.backgroundColor = array[i].color;
+            h3.innerText = array[i].name;
+
+            content.appendChild(h3);пше
+        }
             </script>
     
     
-        <%}%>
         <p><%= Items[0].text %></p>
     </div>
     <img src="/uploads/<%= Items[0].filename %>" alt="/" class="plusimg">

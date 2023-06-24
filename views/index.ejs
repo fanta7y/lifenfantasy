@@ -1,5 +1,28 @@
 <%- include('../particle/header.ejs') %>
         <div class="block">
+            <script type="text/javascript" src=
+            "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" 
+                     integrity=
+            "sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" 
+                     crossorigin="anonymous" 
+                     referrerpolicy="no-referrer">
+                $(document).ready(function(){                
+                      $(window).bind('scroll',fetchMore);
+                 });
+              
+                 fetchMore = function (){
+                     if ( $(window).scrollTop() >= $(document).height()-$(window).height()-300 ){
+                         $(window).unbind('scroll',fetchMore);
+                          $.post('ajax/ajax_manager.php',{'action':'moreReviews','start':$('.review').length,'step':5 },
+                          function(data) {
+                             if(data.length>10){
+                                  $(data).insertBefore($('#moreHolder'));
+                                  $(window).bind('scroll',fetchMore);
+                             }
+                          });
+                      }
+                 }
+              </script>
             <header>
                 <% if(error != false){ 
                     console.log(error); %>
@@ -42,6 +65,7 @@
             </div>
             <br>
             <div>
+
         <button id="fetch" class="form-button">click me, if u dont want do die</button>
 </div>
                 </div>

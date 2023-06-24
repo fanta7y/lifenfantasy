@@ -2,7 +2,7 @@
 <div class="area">
     <h1><%= userdata.name %></h1>
     <p><%= userdata.info %></p>
-    <% if(id == vkid) { %>
+    <% if(params == vkid) { %>
         <form action="/msg" class="inlineform">
             <button type="submit" class="pla">Сообщения</button>
         </form>

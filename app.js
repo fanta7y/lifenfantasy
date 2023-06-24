@@ -37,47 +37,7 @@ function isAuth(req, res, next) {
         req.session.error = false;
         next();
     } else {
-        let page = req.query.page;
-        const ipp = 3;
-        if(!page){
-            page = 1;
-        }
-        let lots = ((Number(page) - 1) * ipp);
-        connection.query("select count(id) as count from items", (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            };
-    
-            const itemsCount = (data[0].count);
-            const pagesCount = Math.ceil(itemsCount / ipp);
-        connection.query("SELECT * FROM items order by id desc limit ? offset ?", [[ipp], [lots]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
-    
-            active = 'index';
-            res.render('index', {
-                'error': 'Ошибка: вы не авторизованы!',
-                'admin': req.session.admin,
-                'promocode': promocode,
-                'name': req.session.name,
-                'vkid': req.session.vkid,
-                'id': req.session.id,
-                'emoji': req.session.emoji,
-                'userinfo': req.session.text,
-                'tel': req.session.tel,
-                'gender': req.session.gender,
-                'auth': req.session.auth,
-                'prev': Number(page) - 1,
-                'next': Number(page) + 1,
-                'act': active,
-                'Items': data,
-                'pages': pagesCount,
-                'page': page
-            });
-        }
-        );
-        });   
+        index(promocode, "Ошибка: Вы не авторизованы!", res, req);
     }
 }
 function isAdmin(req, res, next) {
@@ -85,47 +45,7 @@ function isAdmin(req, res, next) {
         let err = false;
         next();
     } else {
-        let page = req.query.page;
-        const ipp = 3;
-        if(!page){
-            page = 1;
-        }
-        let lots = ((Number(page) - 1) * ipp);
-        connection.query("select count(id) as count from items", (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            };
-    
-            const itemsCount = (data[0].count);
-            const pagesCount = Math.ceil(itemsCount / ipp);
-        connection.query("SELECT * FROM items order by id desc limit ? offset ?", [[ipp], [lots]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
-    
-            active = 'index';
-            res.render('index', {
-                'admin': req.session.admin,
-                'promocode': promocode,
-                'error': 'Ошибка: недостаточно прав!',
-                'name': req.session.name,
-                'vkid': req.session.vkid,
-                'id': req.session.id,
-                'emoji': req.session.emoji,
-                'userinfo': req.session.text,
-                'tel': req.session.tel,
-                'gender': req.session.gender,
-                'auth': req.session.auth,
-                'prev': Number(page) - 1,
-                'next': Number(page) + 1,
-                'act': active,
-                'Items': data,
-                'pages': pagesCount,
-                'page': page
-            });
-        }
-        );
-        });   
+        index(promocode, "Ошибка: Недостаточно прав!", res, req);
     }
 }
 /* Путь к директории файлов ресурсов */
@@ -250,38 +170,41 @@ app.get('/msg', isAuth, (req, res) => {
 app.get('/page', (req, res) => {
 res.redirect('/page/' + req.session.vkid);
 })
-
-    app.get('/', (req, res) => {
-        const itemsPerPage = 4;
-        connection.query("Select count(id) as count from items", (err, data, fields) => {
-            const itemsCount = (data[0].count);
-            const pagesCount = Math.ceil(itemsCount / itemsPerPage);
-            connection.query("SELECT * FROM items limit ? offset 0", [[itemsPerPage]], (err, data, fields) => {
-                if (err) {
-                 
-                    console.log(err);
-                }
-                connection.query("SELECT * from category", (err, dot, fields) => {
-                    res.render('index', {
-                        'items': data,
-                        'pages': pagesCount,
-                        'dot': dot,
-                        'error': false,
-                        'name': req.session.name,
-                        'vkid': req.session.vkid,
-                        'id': req.session.id,
-                        'emoji': req.session.emoji,
-                        'userinfo': req.session.text,
-                        'tel': req.session.tel,
-                        'gender': req.session.gender,
-                        'auth': req.session.auth,
-                        'admin': req.session.admin,
-                        'promocode': promocode,
-                        'act': active,                       
-                    });
+function index(promocode, mirror, res, req){
+    const itemsPerPage = 4;
+    connection.query("Select count(id) as count from items", (err, data, fields) => {
+        const itemsCount = (data[0].count);
+        const pagesCount = Math.ceil(itemsCount / itemsPerPage);
+        connection.query("SELECT * FROM items", (err, data, fields) => {
+            if (err) {
+             
+                console.log(err);
+            }
+            connection.query("SELECT * from category", (err, dot, fields) => {
+                console.log(data);
+                res.render('index', {
+                    'items': data,
+                    'pages': pagesCount,
+                    'dot': dot,
+                    'error': mirror,
+                    'name': req.session.name,
+                    'vkid': req.session.vkid,
+                    'id': req.session.id,
+                    'emoji': req.session.emoji,
+                    'userinfo': req.session.text,
+                    'tel': req.session.tel,
+                    'gender': req.session.gender,
+                    'auth': req.session.auth,
+                    'admin': req.session.admin,
+                    'promocode': promocode,
+                    'act': "index",                       
                 });
             });
         });
+    });
+}
+    app.get('/', (req, res) => {
+        index(promocode, false, res, req);
     });
 
 app.get('/photo', isAuth, (req,res) => {
@@ -639,12 +562,36 @@ app.get('/table', isAuth, (req, res) => {
         );
     });
     app.get('/catform', isAuth, (req, res) => {
-
         res.render('catadd', {
             'act': "app",    
             'auth': req.session.auth
         });
     })
+    app.get('/page/:id', (req, res) => {
+        connection.query("SELECT * FROM users WHERE vkid=?", [[req.params.id]],
+        (err, data, fields) => {
+            if (err) {
+                console.log(err);
+            }
+            res.render('page', {
+                'userdata': data[0],
+                'params': req.params.id,
+                'admin': req.session.admin,
+                'promocode': promocode,
+                'act': "pass",
+                'Items': data,
+                'name': req.session.name,
+                'vkid': req.session.vkid,
+                'userId': req.session.id,
+                'emoji': req.session.emoji,
+                'userinfo': req.session.text,
+                'tel': req.session.tel,
+                'gender': req.session.gender,
+                'auth': req.session.auth,
+            });
+        });
+    }); 
+
     app.get('/items/:id', (req, res) => {
     connection.query("SELECT * FROM items WHERE id=?", [[req.params.id]],
     (err, data, fields) => {
@@ -711,35 +658,42 @@ app.get('/table', isAuth, (req, res) => {
     });
 });
 });
-app.get('/catto/:id', (req,res) => {
-    connection.query("select * from category", (err, data, fields) => {
-        if (err) {
-            console.log(err);
-        }
-        connection.query("select * from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {
+app.get('/catto/:id', isAuth, (req,res) => {
+        connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {
             if (err) {
                 console.log(err);
             }
-        res.render('numb', {
-            'data': data,
-            'numb': numb,
-            'params': req.params.id,
-            'admin': req.session.admin,
-            'promocode': promocode,
-            'Items': data,
-            'name': req.session.name,
-            'vkid': req.session.vkid,
-            'userId': req.session.id,
-            'emoji': req.session.emoji,
-            'userinfo': req.session.text,
-            'tel': req.session.tel,
-            'gender': req.session.gender,
-            'auth': req.session.auth,
-            'act': "app"
+            numb = numb.map(el => {
+                return el.cat_id;
+            });
+            connection.query("select * from category where id = ? or id in ?", [[numb[0]], [numb]], (err, data, fields) => {
+                if (err) {
+                    console.log(err);
+                }
+                connection.query("select * from category", (err, vars, fields) => {
+                    console.log(data);
+                    res.render('numb', {
+                        'vars': vars,
+                        'data': data,
+                        'numb': numb,
+                        'params': req.params.id,
+                        'admin': req.session.admin,
+                        'promocode': promocode,
+                        'Items': data,
+                        'name': req.session.name,
+                        'vkid': req.session.vkid,
+                        'userId': req.session.id,
+                        'emoji': req.session.emoji,
+                        'userinfo': req.session.text,
+                        'tel': req.session.tel,
+                        'gender': req.session.gender,
+                        'auth': req.session.auth,
+                        'act': "app"
+                    });
+                });
+            });
         });
     });
-    });
-});
 app.post('/catadd', (req, res) => {
     function check(m, p) {
         for(let i = 0; i < m.length; i++) {

@@ -503,28 +503,6 @@ app.post('/delmsg', (req, res) => {
         res.redirect('/msg');
     });
 });
-app.get('/table', isAuth, (req, res) => {
-    connection.query("SELECT DATE_FORMAT(date, '%M/%d/%Y') as date, id, init, name, date, desrciption, type, everyYear, color FROM events", function(err, data, fields){
-        if(err) {
-            console.log(err);
-        }
-        res.render('table', {
-            'act': 'pass',
-            'items': data,
-            'admin': req.session.admin,
-            'promocode': promocode,
-            'error': false,
-            'name': req.session.name,
-            'vkid': req.session.vkid,
-            'id': req.session.id,
-            'emoji': req.session.emoji,
-            'userinfo': req.session.text,
-            'tel': req.session.tel,
-            'gender': req.session.gender,
-            'auth': req.session.auth,
-        });
-    });
-    });
     app.post('/addevent', isAuth, (req, res, next) => {
         connection.query("INSERT INTO events(id, name, date, type, description, everyYear, color) VALUES (?, ?, ?, ?, ?, ?)", 
         [[id], [req.body.name], [req.body.date], [req.body.type], [req.body.desc], [req.body.everyYear], [req.body.color]], (err, data, fields) => {
@@ -671,6 +649,7 @@ app.get('/catto/:id', isAuth, (req,res) => {
                     console.log(err);
                 }
                 connection.query("select * from category", (err, vars, fields) => {
+                    console.log('&&&');
                     console.log(data);
                     res.render('numb', {
                         'vars': vars,

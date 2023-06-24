@@ -7,8 +7,9 @@
         <% for(let i = 0; i < numb.length; i++) { %>
         <li> <%=data[i].name%> 
         <br>
+        
         <form action="/dropcat" method="post" id="delete">
-            <input type="hidden" value="<%=numb[i].cat_id%>" name="plc">
+            <input type="hidden" value="<%=numb[i]%>" name="plc">
             <input type="hidden" value="<%=params%>" name="id">
             <input type="submit" id="btn-sub" value="Удалить">
         </form>
@@ -19,7 +20,7 @@
     <input type="hidden" value="<%=params%>" name="id">
     <div class="form-group">
             <% for(let i = 0; i < vars.length; i++) {%>
-                <input type="checkbox" name="<%=vars[i].id%>" class="checkcat"><%=vars[i].name%>
+                <input type="checkbox" name="catID" value="<%=vars[i].id%>" class="checkcat"><%=vars[i].name%>
             <%}%>
     </div>
     <input class="form-button" type="submit" value="Создать">

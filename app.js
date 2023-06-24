@@ -549,9 +549,10 @@ app.post('/delmsg', (req, res) => {
     app.post('/dropcat', (req, res) => {
         console.log(req.body.plc);
         console.log('up');
+        console.log(req.body.id);
         connection.query(
-            "delete from itemstocat where cat_id=?", 
-            [[req.body.plc]],
+            "delete from itemstocat where cat_id=? and item_id=?", 
+            [[req.body.plc], [req.body.id]],
             (err, data, fields) => {
                 if (err) {
                     console.log(err);
@@ -671,7 +672,7 @@ app.get('/catto/:id', isAuth, (req,res) => {
                 }
                 connection.query("select * from category", (err, vars, fields) => {
                     console.log('&&&');
-                    console.log(data);
+                    console.log(numb[0]);
                     res.render('numb', {
                         'vars': vars,
                         'data': data,

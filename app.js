@@ -6,6 +6,7 @@ const path = require('path');
 const multer = require('multer');
 const mysql = require('mysql');
 let promocode = '17F-SKWNH&-L45W5M-201X';
+require('dotenv').config();
 let storage = multer.diskStorage({
 	destination: function (req, file, cb) {
 		cb(null, 'public/uploads');
@@ -21,10 +22,10 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const connection = mysql.createConnection({
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    user: process.env.DB_USER,
-    password: process.env.PASSWORD
+    host: process.env.host,
+    database: process.env.database,
+    user: process.env.db_user,
+    password: process.env.password
 });
 connection.connect((err) => {
     if (err) {

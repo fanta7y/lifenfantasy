@@ -46,7 +46,10 @@
             <form action="/photo" class="inlineform">
                 <button type="submit" class="pla">Добавить фото</button>
             </form>
-            <% if (admin == promocode & auth == true) { %><form action="/offerlist" class="inlineform"><button type="submit" class="pla">Предложенные</button></form>
+            <% if (admin == promocode & auth == true) { %> 
+                <% if(many != 0) {%>
+                    <form action="/offerlist" class="inlineform"><button type="submit" class="pla1"><%='Предложенные ' + many%></button></form>
+                <%}%>
             <form action="/catform" class="inlineform">
                 <button type="submit" class="pla">Добавить категорию</button>
             </form>
@@ -56,14 +59,14 @@
                 <% for(let i = 0; i < items.length; i++ ){ %>
                         <div class="inline">
                             <a href="/Items/<%= items[i].id %>" class="nodec">
-                                <h2> <%=items[i].title %> </h2>
+                                <h2 class="titleone"> <%=items[i].title %> </h2>
                                 <img src="/uploads/<%=items[i].filename %>" alt="/" class="image">
                                 <% if (admin == promocode) {%>
                                 <form action="/delete" method="POST">
-                                    <input type="number" name="id" value="<%= items[i].id %>" hidden>
-                                        <button type="submit" id="sub" hidden></button>
-                                        <label for="sub" class="custom-file-delete">
-                                            Отправить
+                                    <input type="hidden" name="id" value="<%= items[i].id %>" >
+                                        <input type="submit" id='<%="sub" + items[i].id%>' hidden class="sub">
+                                        <label for="<%="sub" + items[i].id%>" class="custom-file-delete">
+                                            Удалить
                                         </label>
                                 </form> <br>
                                 <%}%>

@@ -115,12 +115,15 @@ div.vkpost2x{
     padding-top: auto;
     border: solid 1px;
     border-radius: 5%;
-    height: 49%;
+    width: 332px;
+    height: 332px;
     box-shadow: 2px 5px 5px darkslategray;
 }
 .image {
     border-radius: 5px;
-    height: 215px;
+    max-height: 215px;
+    margin-bottom: 10px;
+    max-width: 322.500px;
 }
 .cool{
     font-size: 24px
@@ -634,4 +637,31 @@ form.delma{
   text-align: center;
   background-color: rgba(0, 0, 0, 0.508);
   border-radius: 10px;
+}
+.custom-file-delete{
+  opacity: 0;
+  background-color: #079e1b;
+  padding: 5px;
+  border-radius: 7px;
+}
+.inline:hover .custom-file-delete {
+    opacity: 100;
+}
+.titleone{
+    word-break:break-all;
+}
+.pla1{
+  margin-top: 20px;
+  color: rgb(0, 92, 0);
+  text-decoration: none;
+  border: solid 1px;
+  border-color: darkslategray;
+  padding: 10px;
+  margin-left: 10px;
+  margin-right: auto;
+  display: inline-block;
+  width: 140px;
+  border-radius: 8px;
+  background-color: lightgreen;
+  font-weight: 550;
 }

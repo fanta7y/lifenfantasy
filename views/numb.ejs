@@ -18,11 +18,9 @@
     <form action="/catadd" method="post">
     <input type="hidden" value="<%=params%>" name="id">
     <div class="form-group">
-        <select name="catID" id="catID" aria-placeholder="Категория">
             <% for(let i = 0; i < vars.length; i++) {%>
-            <option value="<%=vars[i].id%>"><%=vars[i].name%></option>
+                <input type="checkbox" name="<%=vars[i].id%>" class="checkcat"><%=vars[i].name%>
             <%}%>
-        </select>
     </div>
     <input class="form-button" type="submit" value="Создать">
 </form>

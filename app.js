@@ -182,8 +182,10 @@ function index(promocode, mirror, res, req){
                 console.log(err);
             }
             connection.query("SELECT * from category", (err, dot, fields) => {
-                console.log(data);
+                connection.query("select count(id) as count from offer", (err, many, fields) => {
+                    console.log(many);
                 res.render('index', {
+                    'many': many[0].count,
                     'items': data,
                     'pages': pagesCount,
                     'dot': dot,
@@ -201,8 +203,10 @@ function index(promocode, mirror, res, req){
                     'act': "index",                       
                 });
             });
+        
         });
     });
+});
 }
     app.get('/', (req, res) => {
         index(promocode, false, res, req);
@@ -282,7 +286,7 @@ app.get('/app', (req,res) => {
     });
 });
 app.post('/delete', isAuth, isAdmin, (req, res) => {
-        connection.query("DELETE FROM items WHERE id = ?", [req.body.id], function(err, data, fields){
+        connection.query("DELETE FROM items WHERE id = ?", [[req.body.id]], (err, data, fields) => {
             if(err) {
                 console.log(err);
             }
@@ -729,16 +733,16 @@ app.get('/home/:id', (req, res) => {
     });
 
     console.log(want);
-    
+    if(want.length == 0) {
+        mirror = 'Ошибка: В данной категории нет объектов!';
+        index(promocode, mirror, res, req);
+    } else {
     connection.query("Select * from items where id in ?", [[want], [itemsPerPage]], (err, data, fields) => {
         if (err) console.log(err);
         let mirror;
         console.log(data);        
         connection.query("SELECT * from category", (err, dot, fields) => {
-            if(want.length == 0) {
-                mirror = 'Ошибка: В данной категории нет объектов!';
-                index(promocode, mirror, res, req);
-            } else {
+
                 mirror = false;
             res.render('index', {
                 'items': data,
@@ -759,9 +763,9 @@ app.get('/home/:id', (req, res) => {
                 'gender': req.session.gender,
                 'auth': req.session.auth,
             });
-        }
+        });
     });
-    });
+    }
 });
 });
 });

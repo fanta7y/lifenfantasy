@@ -11,7 +11,7 @@
     <div class="upload">
         <form <% if(admin == promocode) {%> action="/upload" <%} else {%> action="/offer" <%}%> enctype="multipart/form-data" method="post">
             Заголовок <br>
-            <input type="text" name="name" class="form__title" autocomplete="off"><br>
+            <input type="text" name="name" class="form__title" autocomplete="off" maxlength="20"><br>
             Текст <br>
             <textarea name="text" placeholder="<%=randomValue%>" autocomplete="off"></textarea> <br>
             Изображениe <br>

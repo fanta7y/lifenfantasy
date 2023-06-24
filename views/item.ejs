@@ -1,0 +1,32 @@
+<%- include('../particle/header.ejs') %>
+<a href="/">
+    <img class="back-arrow" src="/img/back-arrow.png">
+</a>    
+<div class="area">
+        <h1><%= Items[0].title %></h1>
+        <% for(let i = 0; i < thisa.length; i++){%>
+            <h3 class="section__category" id="newid">
+                <%=thisa[i].name%>
+            </h3>
+            <script>
+                let newid = document.getElementById('newid');
+                newid.style.backgroundColor = '<%=thisa[i].color%>';
+            </script>
+    
+    
+        <%}%>
+        <p><%= Items[0].text %></p>
+    </div>
+    <img src="/uploads/<%= Items[0].filename %>" alt="/" class="plusimg">
+    <% if(admin == promocode) { %>
+        <form action="/update" method="POST">
+            <input value="<%= Items[0].id %>" type="hidden" name="id"><br>
+            Название <br>
+            <input value="<%= Items[0].title %>" placeholder="Что у вас за картинка?" type="text" name="title"> <br>
+            Текст <br>
+            <textarea name="text" id="textarea"><%= Items[0].text %></textarea> <br>
+            <button type="submit" class="pla">Изменить</button>
+        </form>
+        <a href="/catto/<%=params%>">Добавить категорию</a>
+    <%}%>
+<%- include('../particle/footer.ejs') %>

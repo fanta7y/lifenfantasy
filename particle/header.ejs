@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+        <link rel="stylesheet" href="/Css/styles.css">
+        <link rel="icon" href="img/Без имени-1.png">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+        <script src="/js/script.js" defer></script>
+        <title>Life & Fantasy</title>
+    </head>
+    <body>
+          <div class="hamburger-menu">
+            <input id="menu__toggle" type="checkbox" accesskey='h'/>
+            <label class="menu__btn" for="menu__toggle" title = "Панель навигации (Alt+H)">
+              <span></span>
+            </label>
+            <ul class="menu__box">
+                <li><a <% if(act == 'index') { %> class="active" <% } else {%> class="menu__item" <% } %> href="../">Главная</a></li>
+                <li><a <% if(act == 'np') { %> class="active" <% } else {%> class="menu__item" <% } %> href="../news-post">Новости</a></li>
+                <li><a <% if(act == 'app') { %> class="active" <% } else {%> class="menu__item" <% } %> href="../app">Контакты</a></li>
+                <li>
+                  <div class="menu__pf"><a <% if(act == 'pass') { %> class="active" <% } else {%> class="menu__item" <% } %> href="<% if(auth == true) {%>/page<% } else { %>/passport/reg <% } %>">Профиль</a></div>
+                </li>
+            </ul>
+          </div>
+          <br>
+          <div class="burger">

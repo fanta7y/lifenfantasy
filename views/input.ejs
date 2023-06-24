@@ -1,0 +1,25 @@
+<%- include('../particle/header.ejs') %>
+<div class="container mt-4"> 
+        <div class="upload">
+            <h1>Войти в аккаунт</h1>
+            <form method="post" action="/login">
+                <div>
+                    VK ID <br>
+                    <input type="text" class="form-control" name="vkid" id="login">
+                </div>
+                <div>
+                    Пароль <br>
+                    <input type="password" name="pass" id="pass">
+                </div>
+                <input type="submit" id="sub" value="Загрузить" hidden>
+                <label for="sub" class="custom-file-upload">
+                    Войти
+                </label>
+            </form>
+            <% if (error != false) {%>
+				<div class="error"><%=error %></div>
+			<%}%>
+            <h3>Еще нет аккаунта? <a href="/passport/reg">Зарегистрироваться!</a></h3>
+            </div>
+        </div>
+<%- include('../particle/footer.ejs') %>

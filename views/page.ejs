@@ -1,0 +1,14 @@
+<%- include('../particle/header.ejs') %>
+<div class="area">
+    <h1><%= userdata.name %></h1>
+    <p><%= userdata.info %></p>
+    <% if(id == vkid) { %>
+        <form action="/msg" class="inlineform">
+            <button type="submit" class="pla">Сообщения</button>
+        </form>
+        <form action="/logout" method="post" class="inlineform">
+            <% if(auth == true) {%><button type="submit" class="pla">Выйти</button><% } %>
+        </form>
+    <%}%>
+</div>
+<%- include('../particle/footer.ejs') %>

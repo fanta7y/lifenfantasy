@@ -1,0 +1,29 @@
+<%- include('../particle/header.ejs') %>
+<div class="container">
+    <% 
+    let myArray = ["Однажды, летним солнечным утром...", "Напишите что-то великое!", "Станьте популярным!", "Смеркалось...", "Если не Вы, никто не узнает", "Жы-Шы пышы с буквай Ы"];
+    let randomIndex = Math.floor(Math.random() * myArray.length);
+    let randomValue = myArray[randomIndex];
+    %>
+    <a href="/">
+        <img class="back-arrow" src="/img/back-arrow.png">
+    </a>  
+    <div class="upload">
+        <form <% if(admin == promocode) {%> action="/upload" <%} else {%> action="/offer" <%}%> enctype="multipart/form-data" method="post">
+            Заголовок <br>
+            <input type="text" name="name" class="form__title" autocomplete="off"><br>
+            Текст <br>
+            <textarea name="text" placeholder="<%=randomValue%>" autocomplete="off"></textarea> <br>
+            Изображениe <br>
+            <input type="file" name="file" accept="image/png, image/jpeg"><br>
+            <% if(admin != promocode) {%> <input value="<%=vkid%>" type="text" name="author" hidden><%}%>
+            <input type="submit" id="sub" value="Загрузить" hidden>
+            <label for="sub" class="custom-file-upload">
+                Загрузить
+            </label>
+        </form>
+    </div>
+
+    
+</div>
+<%- include('../particle/footer.ejs') %>

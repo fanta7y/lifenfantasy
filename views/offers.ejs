@@ -1,0 +1,39 @@
+<%- include('../particle/header.ejs') %>
+<a href="/">
+    <img class="back-arrow" src="/img/back-arrow.png">
+</a>    
+                    <div class="cool">
+                        <% if(pages > 0) { %><a class=""    href="/?page=<% if(prev > 0) { %><%=prev%><% } %>"><</a><% } %>
+                        <% if(pages > 0) { %><a class=""    href="/?page=1"><% if(page != 1) { %>1<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 1) { %><a class=""    href="/?page=2"><% if(page != 2) { %>2<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 2) { %><a class=""    href="/?page=3"><% if(page != 3) { %>3<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 3) { %><a class=""    href="/?page=4"><% if(page != 4) { %>4<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 4) { %><a class=""    href="/?page=5"><% if(page != 5) { %>5<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 5) { %><a class=""    href="/?page=6"><% if(page != 6) { %>6<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 6) { %><a class=""    href="/?page=7"><% if(page != 7) { %>7<% } else {%>·<% } %></a><% } %>
+                        <% if(pages > 0) { %><a class=""    href="/?page=<% if(next <= pages) { %><%=next%><% } %>">></a><% } %>
+                    </div>
+                <br>
+                <div class="block">
+                    <% for(let i = 0; i < Items.length; i++ ){ %>
+                            <div class="inline">
+                                    <h2> <%=Items[i].title %> </h2>
+                                    <p><%=Items[i].text %></p>
+                                    <img src="/uploads/<%=Items[i].image %>" alt="/" class="image">
+                                    <label for="image"><%=Items[i].author %></label>
+                                    <% if (admin == promocode) {%> 
+                                    <form action="/deleteof" method="POST">
+                                        <input type="number" name="id" value="<%= Items[i].id %>" hidden>
+                                            <button type="submit">Удалить</button>
+                                        
+                                    </form> <br>
+                                    <form action="/submit" method="POST">
+                                        <input type="number" name="id" value="<%= Items[i].id %>" hidden>
+                                            <button type="submit">Принять</button>
+                                        
+                                    </form> <br>
+                                    <%}%>
+                            </div>
+                        <% } %>
+                        
+         <%- include('../particle/footer.ejs') %>

@@ -1,0 +1,11 @@
+[
+    {
+        "id": "NY", 
+        "name": "Новый Год", 
+        "date": "January/1/2020", 
+        "description": "Ура!",
+        "type": "holiday", 
+        "everyYear": true,
+        "color": "#F08080"
+    }
+]

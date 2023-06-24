@@ -1,0 +1,48 @@
+<%- include('../particle/header.ejs') %>
+        <div class="block">
+            <header>
+                <% if(error != false){ 
+                    console.log(error); %>
+                    <div class="error"><%=error%></div>
+                <%}%>    
+                <h1>Всем БУМ &#128165; </h1>
+                <div class="block2">
+                    Добро пожаловать на официальный сайт Life & Fantasy &#128165; (Он пока в разработке) Но всё равно спасибо за посещение!
+                </div>
+                 <br>
+                 Создатель сайта: <a href="https://vk.com/dani.motrenko">Даниил Мотренко</a> 
+                 <br>
+            </header>
+            <form action="/photo" class="inlineform">
+                <button type="submit" class="pla">Добавить фото</button>
+            </form>
+            <% if (admin == promocode & auth == true) { %><form action="/offerlist" class="inlineform"><button type="submit" class="pla">Предложенные</button></form>
+            <form action="/catform" class="inlineform">
+                <button type="submit" class="pla">Добавить категорию</button>
+            </form>
+            <%}%> 
+            <br>
+            <div class="objects">
+                <% for(let i = 0; i < items.length; i++ ){ %>
+                        <div class="inline">
+                            <a href="/Items/<%= items[i].id %>" class="nodec">
+                                <h2> <%=items[i].title %> </h2>
+                                <img src="/uploads/<%=items[i].filename %>" alt="/" class="image">
+                                <% if (admin == promocode) {%>
+                                <form action="/delete" method="POST">
+                                    <input type="number" name="id" value="<%= items[i].id %>" hidden>
+                                        <button type="submit">Удалить</button>
+                
+                                </form> <br>
+                                <%}%>
+                            </a>
+                        </div>
+                    <% } %>
+                
+            </div>
+            <br>
+            <div>
+        <button id="fetch" class="form-button">click me, if u dont want do die</button>
+</div>
+                </div>
+         <%- include('../particle/footer.ejs') %>

@@ -1,0 +1,40 @@
+.container {
+    margin: 20px;
+    padding: 20px;
+}
+
+.container__text {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: aqua;
+    border: 2px solid red;
+}
+
+.container__link {
+    color: purple; 
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.container__link:hover {
+    color: blue;
+}
+
+.container__list-item--bold {
+    font-weight: 600;
+}
+
+/**
+ * Адаптивный дизайн
+ * SCREEN WIDTH < 660px
+ */
+@media (max-width: 660px) {
+    h1 {
+        color: black;
+    }
+
+    .container__image {
+        width: 100%;
+        height: auto;
+    }
+}

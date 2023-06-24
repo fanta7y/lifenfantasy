@@ -1,0 +1,71 @@
+<%- include('../particle/header.ejs') %>
+		<div class="upload">
+			<h1>Регистрация</h1>
+			<% if (error != false) {%>
+				<div class="error"><%=error %></div>
+			<%}%>
+			<form method="post" action="/reg">
+				<div>
+					<p>Имя</p>
+					<input placeholder="Чел Челов" tabindex="1" name="username" type="text" />
+				</div>
+				<div>
+					<p>VK ID</p>
+					<input placeholder="Например, id0001" name="vkid" type="text" />
+				</div>
+				<div>
+					<p>Пароль</p>
+					<input tabindex="2" name="userpass" type="password" />
+				</div>
+				<div>
+					<p>Телефон</p>
+					<input placeholder="Например, 79781231234" tabindex="3" name="userphone" type="number" />
+				</div>
+				<div>
+					<p>Пол</p>
+					<div>
+						<input tabindex="4" checked type="radio" name="gender" value="1" /> Мужской
+						<input tabindex="4" type="radio" name="gender" value="0" /> Женский
+					</div>
+				</div>
+				<div>
+					<p>Дополнительная информация</p>
+					<textarea tabindex="6" name="text"></textarea>
+				</div>
+				<div>
+					<p>Выбрать статус:</p>
+					<div class="stat">
+					<input tabindex="7" type="radio" checked name="avatar" value="#128512;"/>&#128512;
+					<input tabindex="7" type="radio" name="avatar" value="#128102;"/>&#128102;
+					<input tabindex="7" type="radio" name="avatar" value="#128103;"/>&#128103;
+					<input tabindex="7" type="radio" name="avatar" value="#128589;"/>&#128589;
+					<input tabindex="7" type="radio" name="avatar" value="#128587;"/>&#128587;
+					<input tabindex="7" type="radio" name="avatar" value="#128526;"/>&#128526;
+					<input tabindex="7" type="radio" name="avatar" value="#128520;"/>&#128520;
+					<input tabindex="7" type="radio" name="avatar" value="#128572;"/>&#128572;
+					</div>
+				</div>
+				<div>
+					<p>Дата рождения</p>
+					<input placeholder="01.01.2001" tabindex="8" name="age" type="date" />
+				</div>
+				<div>
+					<p>Есть промокод админа?</p>
+					<input placeholder="Введи его сюда" tabindex="9" name="promo" type="text" />
+				</div>
+				<div>
+					<br>
+					<input type="submit" id="sub" value="Загрузить" hidden>
+					<label for="sub" class="custom-file-upload">
+						Отправить
+					</label>
+					<input type="reset" id="res" value="Очистить" hidden>
+					<label for="res" class="custom-file-reset">
+						Очистить
+					</label>
+				</div>
+			</form>
+			<h3>Уже есть аккаунт? <a href="/passport/input">Войти</a></h3>
+		</div>
+
+		<%- include('../particle/footer.ejs') %>

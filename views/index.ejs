@@ -1,4 +1,4 @@
-<%- include('../particle/header.ejs') %>
+<%- include('/particle/header.ejs') %>
         <div class="block">
             <script type="text/javascript" src=
             "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" 
@@ -36,6 +36,13 @@
                  Создатель сайта: <a href="https://vk.com/dani.motrenko">Даниил Мотренко</a> 
                  <br>
             </header>
+            <br>
+            <div class="navigation">
+                <a href="/">Все</a>
+                <% for (let i = 0; i < dot.length; i++) {%>
+                <a href="/home/<%=dot[i].id%>"><%=dot[i].name%></a>
+                <% }%>
+            </div>
             <form action="/photo" class="inlineform">
                 <button type="submit" class="pla">Добавить фото</button>
             </form>
@@ -54,8 +61,10 @@
                                 <% if (admin == promocode) {%>
                                 <form action="/delete" method="POST">
                                     <input type="number" name="id" value="<%= items[i].id %>" hidden>
-                                        <button type="submit">Удалить</button>
-                
+                                        <button type="submit" id="sub" hidden></button>
+                                        <label for="sub" class="custom-file-delete">
+                                            Отправить
+                                        </label>
                                 </form> <br>
                                 <%}%>
                             </a>
@@ -68,4 +77,4 @@
 
 </div>
                 </div>
-         <%- include('../particle/footer.ejs') %>
+         <%- include('/particle/footer.ejs') %>

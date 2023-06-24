@@ -714,3 +714,54 @@ app.post('/catadd', (req, res) => {
     }
 });
 });
+app.get('/home/:id', (req, res) => {
+    if(req.params.id == 'all') {
+        res.redirect('/');
+    }
+    const itemsPerPage = 4;
+    connection.query("Select count(id) as count from items", (err, data, fields) => {
+        const itemsCount = (data[0].count);
+        const pagesCount = Math.ceil(itemsCount / itemsPerPage);
+    connection.query("Select item_id from itemstocat where cat_id = ?", [[req.params.id]], (err, want, fields) => {
+    if (err) console.log(err);
+    want = want.map(el => {
+        return el.item_id;
+    });
+
+    console.log(want);
+    
+    connection.query("Select * from items where id in ?", [[want], [itemsPerPage]], (err, data, fields) => {
+        if (err) console.log(err);
+        let mirror;
+        console.log(data);        
+        connection.query("SELECT * from category", (err, dot, fields) => {
+            if(want.length == 0) {
+                mirror = 'Ошибка: В данной категории нет объектов!';
+                index(promocode, mirror, res, req);
+            } else {
+                mirror = false;
+            res.render('index', {
+                'items': data,
+                'all': false,
+                'err': mirror,
+                'dot': dot,
+                'act': 'index',
+                'params': req.params.id,
+                'admin': req.session.admin,
+                'promocode': promocode,
+                'Items': data,
+                'name': req.session.name,
+                'vkid': req.session.vkid,
+                'userId': req.session.id,
+                'emoji': req.session.emoji,
+                'userinfo': req.session.text,
+                'tel': req.session.tel,
+                'gender': req.session.gender,
+                'auth': req.session.auth,
+            });
+        }
+    });
+    });
+});
+});
+});

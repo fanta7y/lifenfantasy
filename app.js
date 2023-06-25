@@ -674,25 +674,18 @@ app.post('/delmsg', (req, res) => {
 });
 });
 app.get('/catto/:id', isAuth, (req,res) => {
-        connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {
-            if (err) {
-                console.log(err);
-            }
-            numb = numb.map(el => {
+    connection.query("Select * from itemstocat where item_id = ?", [[req.params.id]], (err, item, fields) => {
+        if (err) throw err;
+        if (typeof item !== 'undefined' && item.length > 0) {
+            item = item.map(el => {
                 return el.cat_id;
             });
-            if(numb.length != 0) {
-            connection.query("select * from category where id = ? or id in ?", [[numb[0]], [numb]], (err, data, fields) => {
-                if (err) {
-                    console.log(err);
-                }
-                connection.query("select * from category", (err, vars, fields) => {
-                    console.log('&&&');
-                    console.log(vars);
+            connection.query("select * from category where id = ? or id in ?", [[item[0]], [item]], (err, data, fields ) => {
+                if (err) throw err;
+                connection.query("Select * from category where id NOT IN ?", [[item]], (err, notin, fields) => {
                     res.render('numb', {
-                        'vars': vars,
                         'data': data,
-                        'numb': numb,
+                        'notin': notin,
                         'params': req.params.id,
                         'admin': req.session.admin,
                         'promocode': promocode,
@@ -709,28 +702,63 @@ app.get('/catto/:id', isAuth, (req,res) => {
                     });
                 });
             });
-        } else {
-            connection.query("select * from category", (err, vars, fields) => {
-                res.render('numb', {
-                    'vars': vars,
-                    'data': [],
-                    'numb': numb,
-                    'params': req.params.id,
-                    'admin': req.session.admin,
-                    'promocode': promocode,
-                    'name': req.session.name,
-                    'vkid': req.session.vkid,
-                    'userId': req.session.id,
-                    'emoji': req.session.emoji,
-                    'userinfo': req.session.text,
-                    'tel': req.session.tel,
-                    'gender': req.session.gender,
-                    'auth': req.session.auth,
-                    'act': "app"
-                });
-            });
         }
-        });
+    })
+        // connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {
+        //     if (err) {
+        //         console.log(err);
+        //     }
+        //     numb = numb.map(el => {
+        //         return el.cat_id;
+        //     });
+        //     if(numb.length != 0) {
+        //     connection.query("select * from category where id = ? or id in ?", [[numb[0]], [numb]], (err, data, fields) => {
+        //         if (err) {
+        //             console.log(err);
+        //         }
+        //         connection.query("select * from category", (err, vars, fields) => {
+        //             res.render('numb', {
+        //                 'vars': vars,
+        //                 'data': data,
+        //                 'numb': numb,
+        //                 'params': req.params.id,
+        //                 'admin': req.session.admin,
+        //                 'promocode': promocode,
+        //                 'Items': data,
+        //                 'name': req.session.name,
+        //                 'vkid': req.session.vkid,
+        //                 'userId': req.session.id,
+        //                 'emoji': req.session.emoji,
+        //                 'userinfo': req.session.text,
+        //                 'tel': req.session.tel,
+        //                 'gender': req.session.gender,
+        //                 'auth': req.session.auth,
+        //                 'act': "app"
+        //             });
+        //         });
+        //     });
+        // } else {
+        //     connection.query("select * from category", (err, vars, fields) => {
+        //         res.render('numb', {
+        //             'vars': vars,
+        //             'data': [],
+        //             'numb': numb,
+        //             'params': req.params.id,
+        //             'admin': req.session.admin,
+        //             'promocode': promocode,
+        //             'name': req.session.name,
+        //             'vkid': req.session.vkid,
+        //             'userId': req.session.id,
+        //             'emoji': req.session.emoji,
+        //             'userinfo': req.session.text,
+        //             'tel': req.session.tel,
+        //             'gender': req.session.gender,
+        //             'auth': req.session.auth,
+        //             'act': "app"
+        //         });
+        //     });
+        // }
+        // });
     });
 app.post('/catadd', (req, res) => {
     let cats = true;
@@ -738,7 +766,8 @@ app.post('/catadd', (req, res) => {
     cats = req.body.catID;
     }
     let items = req.body.id;
-    if(cats != true) {
+    console.log(cats);
+    if(cats != undefined) {
         let b = new Array;
         let a = new Array;
         for(let i = 0; i < cats.length; i++) {

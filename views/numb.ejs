@@ -3,25 +3,13 @@
     <form action="/catadd" method="post">
     <input type="hidden" value="<%=params%>" name="id">
     <div class="form-group">
-        <%  if(vars != 0 && data.length != 0){ 
-        for(let i = 0; i < vars.length; i++) {
-            vars = vars.filter(function(obj) {
-            return obj.id !== data[i].id;
-        });
-        } }
-        console.log(data.length)%>
-        <%
-        if(data.length != 0) {
-        for(let i = 0; i < data.length; i++) {
-            console.log(data[i]);%>
+        <% for(let i = 0; i < data.length; i++) { %>
             <input type="checkbox" name="catID" class="checkcat" value="<%=data[i].id%>" checked><%=data[i].name%>
-        <%} }
-        %>
-            <%  console.log(vars)
-             for(let i = 0; i < vars.length; i++) {%>
-                <input type="checkbox" name="catID" value="<%=vars[i].id%>" class="input"><%=vars[i].name%>
-            <%}
-            %>
+        <%}%>
+            <% if (typeof notin !== 'undefined' && notin.length > 0) {
+            for(let i = 0; i < notin.length; i++) {%>
+                <input type="checkbox" name="catID" value="<%=notin[i].id%>" class="input"><%=notin[i].name%>
+            <% } }%>
     </div>
     <button class="submit-button" type="submit">Сохранить</button>
 </form>

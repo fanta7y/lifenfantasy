@@ -401,10 +401,6 @@ app.get('/passport/input', (req,res) => {
 
     app.post('/login', (req, res) => {
         let error = false;
-        let salt = 10;
-        let password = req.body.pass;
-        bcrypt.hash(password, salt, (err, hash) => {
-        console.log(hash);
         connection.query(
             "SELECT * FROM users WHERE vkid=?",
             [[req.body.vkid]],
@@ -412,7 +408,8 @@ app.get('/passport/input', (req,res) => {
                 if (err) {
                     console.log(err);
                 }
-                bcrypt.compare(password, data[0].password, (err, result) => {
+                if(data.length != 0) {
+                bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
                     console.log(result);
                 
                 console.log(data);
@@ -441,14 +438,27 @@ app.get('/passport/input', (req,res) => {
                     'gender': req.session.gender,
                     'auth': req.session.auth,        
                     'act': active,
+                });
                 }
-                );
+            });
+            } else {
+                res.render('input', {
+                    'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
+                    'act': active,
+                    'name': req.session.name,
+                    'vkid': req.session.vkid,
+                    'id': req.session.id,
+                    'emoji': req.session.emoji,
+                    'userinfo': req.session.text,
+                    'tel': req.session.tel,
+                    'gender': req.session.gender,
+                    'auth': req.session.auth,        
+                    'act': active,
+                });
             }
-            }
-        );
         });
-    });
-    });
+    });    
+
     app.post('/logout', isAuth, (req, res) => {
         req.session.auth = false;  
         res.redirect('/');
@@ -535,6 +545,7 @@ app.post('/delmsg', (req, res) => {
     });
 
     app.post('/cat', (req, res) => {
+        if(req.body.name != '') {
         connection.query(
             "INSERT INTO category (name, descr, color) VALUES (?, ?, ?)",
             [[req.body.name], [req.body.descr], [req.body.clr]],
@@ -545,6 +556,10 @@ app.post('/delmsg', (req, res) => {
                 res.redirect('/');
             }
         );
+        } else {
+            let error = "Ошибка: название не может быть пустым!";
+            index(promocode, error, res, req);
+        }
     });
     app.post('/dropcat', (req, res) => {
         console.log(req.body.plc);
@@ -666,13 +681,14 @@ app.get('/catto/:id', isAuth, (req,res) => {
             numb = numb.map(el => {
                 return el.cat_id;
             });
+            if(numb.length != 0) {
             connection.query("select * from category where id = ? or id in ?", [[numb[0]], [numb]], (err, data, fields) => {
                 if (err) {
                     console.log(err);
                 }
                 connection.query("select * from category", (err, vars, fields) => {
                     console.log('&&&');
-                    console.log(numb[0]);
+                    console.log(vars);
                     res.render('numb', {
                         'vars': vars,
                         'data': data,
@@ -693,12 +709,37 @@ app.get('/catto/:id', isAuth, (req,res) => {
                     });
                 });
             });
+        } else {
+            connection.query("select * from category", (err, vars, fields) => {
+                console.log('&&&');
+                console.log(vars);
+                res.render('numb', {
+                    'vars': vars,
+                    'data': [],
+                    'numb': numb,
+                    'params': req.params.id,
+                    'admin': req.session.admin,
+                    'promocode': promocode,
+                    'name': req.session.name,
+                    'vkid': req.session.vkid,
+                    'userId': req.session.id,
+                    'emoji': req.session.emoji,
+                    'userinfo': req.session.text,
+                    'tel': req.session.tel,
+                    'gender': req.session.gender,
+                    'auth': req.session.auth,
+                    'act': "app"
+                });
+            });
+        }
         });
     });
 app.post('/catadd', (req, res) => {
+    let cats = req.body.catID;
+    let items = req.body.id;
     function check(m, p) {
         for(let i = 0; i < m.length; i++) {
-            if (p[i] == m[i].cat_id) return false;
+            if (p[0] == m[i].cat_id) return false;
         }
         return true;
     }
@@ -706,14 +747,33 @@ app.post('/catadd', (req, res) => {
         if (err) {
             console.log(err);
         }
+    console.log(cats);
+    if(cats != '') {
     if (check(numb, req.body.catID)) {
         console.log(check(numb, req.body.catID))
-    connection.query(
-        "Insert into itemstocat (item_id, cat_id) values (?, ?)", [[req.body.id], [req.body.catID]], (err, data, fields) => {
-            if (err) console.log(err);
-            res.redirect('/catto/' + req.body.id);            
+        let a = new Array;
+        let b = new Array
+        for(let i = 0; i < cats.length; i++) {
+            b.push(items);
+            b.push(cats[i]);
+            a.push(b);
+            b = [];
         }
-    )
+        console.log(a);
+        connection.query(
+            "Insert into itemstocat (item_id, cat_id) values ?", [a], (err, data, fields) => {
+                if (err) console.log(err);
+                res.redirect('/catto/' + req.body.id);            
+            }
+        );
+        } else {
+            connection.query(
+                "delete from itemstocat where item_id=?", [items], (err, data, fields) => {
+                    if (err) console.log(err);
+                    res.redirect('/catto/' + req.body.id);            
+                }
+            ); 
+        }
     } else {
         res.redirect('/catto/' + req.body.id);
     }

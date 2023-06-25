@@ -48,7 +48,7 @@
             </form>
             <% if (admin == promocode & auth == true) { %> 
                 <% if(many != 0) {%>
-                    <form action="/offerlist" class="inlineform"><button type="submit" class="pla1"><%='Предложенные ' + many%></button></form>
+                    <form action="/offerlist" class="inlineform"><button type="submit" class="pla1"><%='Предложенные: ' + many%></button></form>
                 <%}%>
             <form action="/catform" class="inlineform">
                 <button type="submit" class="pla">Добавить категорию</button>

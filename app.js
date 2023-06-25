@@ -711,8 +711,6 @@ app.get('/catto/:id', isAuth, (req,res) => {
             });
         } else {
             connection.query("select * from category", (err, vars, fields) => {
-                console.log('&&&');
-                console.log(vars);
                 res.render('numb', {
                     'vars': vars,
                     'data': [],
@@ -735,24 +733,14 @@ app.get('/catto/:id', isAuth, (req,res) => {
         });
     });
 app.post('/catadd', (req, res) => {
-    let cats = req.body.catID;
-    let items = req.body.id;
-    function check(m, p) {
-        for(let i = 0; i < m.length; i++) {
-            if (p[0] == m[i].cat_id) return false;
-        }
-        return true;
+    let cats = true;
+    if (req.body.catID != []) {
+    cats = req.body.catID;
     }
-    connection.query("select cat_id from itemstocat where item_id=?", [[req.body.id]], (err, numb, fields) => {
-        if (err) {
-            console.log(err);
-        }
-    console.log(cats);
-    if(cats != '') {
-    if (check(numb, req.body.catID)) {
-        console.log(check(numb, req.body.catID))
+    let items = req.body.id;
+    if(cats != true) {
+        let b = new Array;
         let a = new Array;
-        let b = new Array
         for(let i = 0; i < cats.length; i++) {
             b.push(items);
             b.push(cats[i]);
@@ -760,25 +748,21 @@ app.post('/catadd', (req, res) => {
             b = [];
         }
         console.log(a);
-        connection.query(
-            "Insert into itemstocat (item_id, cat_id) values ?", [a], (err, data, fields) => {
-                if (err) console.log(err);
-                res.redirect('/catto/' + req.body.id);            
-            }
-        );
-        } else {
-            connection.query(
-                "delete from itemstocat where item_id=?", [items], (err, data, fields) => {
-                    if (err) console.log(err);
-                    res.redirect('/catto/' + req.body.id);            
-                }
-            ); 
-        }
+    connection.query("Delete from itemstocat where item_id=?", [[items]], (err, data, fields) => {
+        if (err) throw err;
+        connection.query("Insert into itemstocat (item_id, cat_id) values ?", [a], (err, data, fields) => {
+            if (err) throw  err;
+            res.redirect('/catto/' + items);
+        })
+    })
     } else {
-        res.redirect('/catto/' + req.body.id);
+        connection.query("Delete from itemstocat where item_id=?", [[items]], (err, data, fields) => {
+            if (err) throw err;
+            res.redirect('/catto/' + items);
+        });
     }
 });
-});
+
 app.get('/home/:id', (req, res) => {
     if(req.params.id == 'all') {
         res.redirect('/');
@@ -800,8 +784,7 @@ app.get('/home/:id', (req, res) => {
     } else {
     connection.query("Select * from items where id in ?", [[want], [itemsPerPage]], (err, data, fields) => {
         if (err) console.log(err);
-        let mirror;
-        console.log(data);        
+        let mirror;       
         connection.query("SELECT * from category", (err, dot, fields) => {
 
                 mirror = false;

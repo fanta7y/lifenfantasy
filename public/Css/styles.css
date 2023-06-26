@@ -665,3 +665,13 @@ form.delma{
   background-color: lightgreen;
   font-weight: 550;
 }
+.checkright{
+  background-color: rgb(0, 119, 230);
+  display: inline-block;
+  padding: 5px;
+  padding-right: 15px;
+  border-radius: 1cm; 
+}
+.form-group{
+  width: 70%;
+}

@@ -4,11 +4,11 @@
     <input type="hidden" value="<%=params%>" name="id">
     <div class="form-group">
         <% for(let i = 0; i < data.length; i++) { %>
-            <input type="checkbox" name="catID" class="checkcat" value="<%=data[i].id%>" checked><%=data[i].name%>
+            <p class="checkright"><input type="checkbox" name="catID" class="checkcat" value="<%=data[i].id%>" checked><%=data[i].name%></p>
         <%}%>
             <% if (typeof notin !== 'undefined' && notin.length > 0) {
             for(let i = 0; i < notin.length; i++) {%>
-                <input type="checkbox" name="catID" value="<%=notin[i].id%>" class="input"><%=notin[i].name%>
+                <p class="checkright"><input type="checkbox" name="catID" value="<%=notin[i].id%>" class="input" id="check"><%=notin[i].name%></p>
             <% } }%>
     </div>
     <button class="submit-button" type="submit">Сохранить</button>

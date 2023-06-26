@@ -702,6 +702,25 @@ app.get('/catto/:id', isAuth, (req,res) => {
                     });
                 });
             });
+        } else { 
+            connection.query("Select * from category", (err, notin, fields) => {
+                res.render('numb', {
+                    'data': [],
+                    'notin': notin,
+                    'params': req.params.id,
+                    'admin': req.session.admin,
+                    'promocode': promocode,
+                    'name': req.session.name,
+                    'vkid': req.session.vkid,
+                    'userId': req.session.id,
+                    'emoji': req.session.emoji,
+                    'userinfo': req.session.text,
+                    'tel': req.session.tel,
+                    'gender': req.session.gender,
+                    'auth': req.session.auth,
+                    'act': "app"
+                });
+            });
         }
     })
         // connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {

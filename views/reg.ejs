@@ -1,6 +1,7 @@
 <%- include('../particle/header.ejs') %>
 		<div class="upload">
 			<h1>Регистрация</h1>
+			<h3>Уже есть аккаунт? <a href="/passport/input">Войти</a></h3>
 			<% if (error != false) {%>
 				<div class="error"><%=error %></div>
 			<%}%>
@@ -65,7 +66,7 @@
 					</label>
 				</div>
 			</form>
-			<h3>Уже есть аккаунт? <a href="/passport/input">Войти</a></h3>
+
 		</div>
 
 		<%- include('../particle/footer.ejs') %>

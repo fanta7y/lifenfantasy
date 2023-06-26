@@ -839,7 +839,7 @@ app.get('/home/:id', (req, res) => {
             res.render('index', {
                 'items': data,
                 'all': false,
-                'err': mirror,
+                'error': mirror,
                 'dot': dot,
                 'act': 'index',
                 'params': req.params.id,

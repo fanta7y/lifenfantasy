@@ -834,9 +834,11 @@ app.get('/home/:id', (req, res) => {
         if (err) console.log(err);
         let mirror;       
         connection.query("SELECT * from category", (err, dot, fields) => {
-
+            connection.query("select count(id) as count from offer", (err, many, fields) => {
+                console.log(many);
                 mirror = false;
             res.render('index', {
+                'many': many[0].count,
                 'items': data,
                 'all': false,
                 'error': mirror,
@@ -857,7 +859,9 @@ app.get('/home/:id', (req, res) => {
             });
         });
     });
+    });
     }
 });
+
 });
 });

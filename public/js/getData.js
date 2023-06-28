@@ -1,5 +1,5 @@
-async function getData(offset=0) {
-    let response = await fetch('http://192.168.0.118:3000/items', {
+async function getData(offset, data = []) {
+    const response = await fetch('http://192.168.0.118:3000/items', {
         method: 'POST',
         headers: {
             'Content-type': 'application/json',
@@ -10,9 +10,20 @@ async function getData(offset=0) {
     });
 
     let items = await response.json();
+    if(items.length == 0) {
+        return data;
+    }
 
-    return items;
+    items.forEach(item => {
+        data.push(item);
+    });
+
+    return getData(offset + 2, data);
 }
-getData(0).then((items) => {
-    console.log(items);
-});
+    getData(0).then((items) => {
+        console.log(items);
+
+    });
+
+
+

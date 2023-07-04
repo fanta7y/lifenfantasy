@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  text       String   @db.Text
+  filename   String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  location    Location          @relation(fields: [location_id], references: [id])
+  location_id Int
+  categories  ItemRelCategory[]
+
+  @@map("items")
+}
+
+model Location {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  description String   @db.VarChar(255)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  items Item[]
+
+  @@map("locations")
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  color      String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  items ItemRelCategory[]
+
+  @@map("category")
+}
+
+model ItemRelCategory {
+  item        Item     @relation(fields: [item_id], references: [id])
+  item_id     Int
+  category    Category @relation(fields: [category_id], references: [id])
+  category_id Int
+
+  @@id([item_id, category_id])
+  @@map("itemstocat")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  username       String   @db.VarChar(255)
+  vkid       String   @db.VarChar(255)
+  password   String   @db.Text
+  Phone      BigInt
+  Gender     Int
+  Info       String   @db.Text
+  Emoji      String   @db.VarChar(255)
+  date       String   @db.VarChar(255)
+  private    String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("users")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  sender     String   @db.VarChar(255)
+  recipient  String   @db.VarChar(255)
+  text       String   @db.Text
+  team       Int
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("msg")
+}
+
+model Offer {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  text        String   @db.Text
+  filename    String   @db.VarChar(255)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  author      String   @db.VarChar(255)
+  location_id Int
+
+  @@map("offers")
+}

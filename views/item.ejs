@@ -8,12 +8,11 @@
         <script> 
         let array = JSON.parse('<%- JSON.stringify(thisa) %>');
         for(let i = 0; i < '<%=thisa.length%>'; i++){
-            console.log(array);
             let content = document.getElementById('content');
             let h3 = document.createElement('h3');
             h3.classList.add('section__category');
             h3.style.backgroundColor = array[i].color;
-            h3.innerText = array[i].name;
+            h3.innerText = array[i].title;
 
             content.appendChild(h3);
         }

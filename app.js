@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 const path = require('path');
 const multer = require('multer');
 const mysql = require('mysql');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 let promocode = '17F-SKWNH&-L45W5M-201X';
 require('dotenv').config();
 let storage = multer.diskStorage({
@@ -22,31 +24,20 @@ const session = require('express-session');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
-const connection = mysql.createConnection({
-    host: process.env.host,
-    database: process.env.database,
-    user: process.env.db_user,
-    password: process.env.password
-});
-connection.connect((err) => {
-    if (err) {
-        console.log(err);
-    }
-});
-function isAuth(req, res, next) {
+function isAuth (req, res, next) {
     if (req.session.auth) {
         req.session.error = false;
         next();
     } else {
-        index(promocode, "Ошибка: Вы не авторизованы!", res, req);
+        index(promocode, "Ошибка: Вы не авторизованы!", req, res);
     }
 }
-function isAdmin(req, res, next) {
+function isAdmin(req, next) {
     if (req.session.admin == promocode) {
         let err = false;
         next();
     } else {
-        index(promocode, "Ошибка: Недостаточно прав!", res, req);
+        index(promocode, "Ошибка: Недостаточно прав!", req, res);
     }
 }
 /* Путь к директории файлов ресурсов */
@@ -120,18 +111,18 @@ app.get('/msg', isAuth, (req, res) => {
 });
 
     // });
-    app.post('/upload', upload.single('file'), (req, res, next) => {
-        console.log('_____________')
-        console.log(req.body.name);
-        console.log(req.body.text);
-        console.log(req.file.originalname);
-        connection.query("INSERT INTO items(title, text, filename) VALUES (?, ?, ?)", 
-        [[req.body.name], [req.body.text], [req.file.originalname]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
+    app.post('/upload', upload.single('file'), async (req, res, next) => {
+        const { name, text, location_id } = req.body;
+        const { originalname } = req.file;
+            await prisma.item.create({
+                data: {
+                    title: name,
+                    text,
+                    filename: originalname,
+                    location_id: Number(location_id),
+                }
+            });
             res.redirect('/');
-        });
         });
         app.post('/submit', (req, res, next) => {
             connection.query("SELECT * FROM offer WHERE id=?", [req.body.id], (err, data, fields) => {
@@ -171,48 +162,46 @@ app.get('/msg', isAuth, (req, res) => {
 app.get('/page', (req, res) => {
 res.redirect('/page/' + req.session.vkid);
 })
-function index(promocode, mirror, res, req){
-    const itemsPerPage = 4;
-    connection.query("Select count(id) as count from items", (err, data, fields) => {
-        const itemsCount = (data[0].count);
-        const pagesCount = Math.ceil(itemsCount / itemsPerPage);
-        connection.query("SELECT * FROM items", (err, data, fields) => {
-            if (err) {
-             
-                console.log(err);
-            }
-            connection.query("SELECT * from category", (err, dot, fields) => {
-                connection.query("select count(id) as count from offer", (err, many, fields) => {
-                    console.log(many);
-                res.render('index', {
-                    'many': many[0].count,
-                    'items': data,
-                    'pages': pagesCount,
-                    'dot': dot,
-                    'error': mirror,
-                    'name': req.session.name,
-                    'vkid': req.session.vkid,
-                    'id': req.session.id,
-                    'emoji': req.session.emoji,
-                    'userinfo': req.session.text,
-                    'tel': req.session.tel,
-                    'gender': req.session.gender,
-                    'auth': req.session.auth,
-                    'admin': req.session.admin,
-                    'promocode': promocode,
-                    'act': "index",                       
-                });
-            });
-        
-        });
+async function index(promocode, mirror, req, res){
+    const item = await prisma.item.findMany({
+        include: {
+            location: true,
+            categories: {
+                include: {
+                    category: true,
+                }
+            },
+        }
     });
-});
+    const cats = await prisma.category.findMany({
+    });
+    const off = await prisma.Offer.findMany({
+    });
+    console.log(item);
+    res.render('index', {
+        'many': off.length,
+        'items': (item) ? item : {},
+        'error': mirror,
+        'name': req.session.name,
+        'vkid': req.session.vkid,
+        'id': req.session.id,
+        'emoji': req.session.emoji,
+        'userinfo': req.session.text,
+        'tel': req.session.tel,
+        'gender': req.session.gender,
+        'auth': req.session.auth,
+        'admin': req.session.admin,
+        'promocode': promocode,
+        'act': "index",
+        'dot': (cats) ? cats : {}
+                
+    });
 }
     app.get('/', (req, res) => {
-        index(promocode, false, res, req);
+        index(promocode, false, req, res);
     });
 
-app.get('/photo', isAuth, (req,res) => {
+app.get('/photo',  (req,res) => {
     active = 'app';
     res.render('form', {
         'admin': req.session.admin,
@@ -345,27 +334,36 @@ app.get('/passport/input', (req,res) => {
     // }
 
     app.post('/reg', (req, res) => {
-        if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.userphone != '' && req.body.age != '') {
+        if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.phone != '' && req.body.date != '') {
             let salt = 10;
-            let password = req.body.userpass;
-            bcrypt.hash(password, salt, (err, hash) => {
-                console.log(hash);
-                connection.query(
-                    "INSERT INTO users (name, vkid,  password, Phone, gender, info, emoji, date, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    [[req.body.username], [req.body.vkid], [hash], [req.body.userphone], [req.body.gender], [req.body.text], [req.body.avatar], [req.body.age], [req.body.promo]],
-                    (err, data, fields) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        
-                        connection.query(
-                            "SELECT * FROM users WHERE vkid=? and password=?",
-                            [[req.body.vkid], [hash]],
-                            (err, data, fields) => {
-                                if (err) {
-                                    console.log(err);
-                                }
+            const { username, vkid, userpass, phone, Gender, text, emoji, date, private} = req.body;
+            bcrypt.hash(userpass, salt, async (err, password) => {
+                console.log(password);
+                console.log(Gender);
+                console.log(phone);
+                        await prisma.user.create({
+                            data: {
+                                username: username,
+                                vkid: vkid,
+                                password: password,
+                                Phone: Number(phone),
+                                Gender: Number(Gender),
+                                Info: text,
+                                Emoji: emoji,
+                                date: date,
+                                private: private
+                            }
+                        });
+                        let a = await prisma.user.findFirst({
+                            where: {
+                                vkid: vkid,
+                                password: password,
+                            }
+                        })
+                        let data = [];
+                        data.push(a);
                                 console.log(data);
+                                console.log('data');
                                 req.session.admin = data[0].private;
                                 req.session.name = data[0].name;
                                 req.session.vkid = data[0].vkid;
@@ -375,12 +373,8 @@ app.get('/passport/input', (req,res) => {
                                 req.session.tel = data[0].phone;
                                 req.session.gender = data[0].gender;
                                 req.session.auth = true;
+
                                 res.redirect('/');
-                            }
-                        );
-                    }
-                   
-                );
             });
         } else {
             active = 'pass';
@@ -399,15 +393,15 @@ app.get('/passport/input', (req,res) => {
         }
     });
 
-    app.post('/login', (req, res) => {
+    app.post('/login', async (req, res) => {
         let error = false;
-        connection.query(
-            "SELECT * FROM users WHERE vkid=?",
-            [[req.body.vkid]],
-            (err, data, fields) => {
-                if (err) {
-                    console.log(err);
-                }
+        let data = new Array;
+        data.push(await prisma.user.findFirst({
+            where: {
+                vkid: req.body.vkid,
+            }
+        }));
+
                 if(data.length != 0) {
                 bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
                     console.log(result);
@@ -456,8 +450,7 @@ app.get('/passport/input', (req,res) => {
                     'act': active,
                 });
             }
-        });
-    });    
+        });  
 
     app.post('/logout', isAuth, (req, res) => {
         req.session.auth = false;  
@@ -475,25 +468,11 @@ app.get('/passport/input', (req,res) => {
     });
     
 
-    app.get('/offerlist', isAuth, isAdmin, (req,res) => {
-        let page = req.query.page;
-        const ipp = 3;
-        if(!page){
-            page = 1;
-        }
-        let lots = ((Number(page) - 1) * ipp);
-        connection.query("select count(id) as count from offer", (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            };
-    
-            const itemsCount = (data[0].count);
-            const pagesCount = Math.ceil(itemsCount / ipp);
-        connection.query("SELECT * FROM offer order by id desc limit ? offset ?", [[ipp], [lots]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
-    
+    app.get('/offerlist',  async (req, res) => {
+        // connection.query("SELECT * FROM offer order by id desc limit ? offset ?", [[ipp], [lots]], (err, data, fields) => {
+        const data = await prisma.Offer.findMany({
+
+        });
             active = 'index';
             res.render('offers', {
                 'admin': req.session.admin,
@@ -507,17 +486,11 @@ app.get('/passport/input', (req,res) => {
                 'tel': req.session.tel,
                 'gender': req.session.gender,
                 'auth': req.session.auth,
-                'prev': Number(page) - 1,
-                'next': Number(page) + 1,
                 'act': active,
                 'Items': data,
-                'pages': pagesCount,
-                'page': page
             });
         }
         );
-        });   
-    });
     app.post('/deleteof', isAuth, isAdmin, (req, res) => {
         connection.query("DELETE FROM offer WHERE id = ?", [req.body.id], function(err, data, fields){
             if(err) {
@@ -558,7 +531,7 @@ app.post('/delmsg', (req, res) => {
         );
         } else {
             let error = "Ошибка: название не может быть пустым!";
-            index(promocode, error, res, req);
+            index(promocode, error, req, res);
         }
     });
     app.post('/dropcat', (req, res) => {
@@ -607,59 +580,37 @@ app.post('/delmsg', (req, res) => {
         });
     }); 
 
-    app.get('/items/:id', (req, res) => {
-    connection.query("SELECT * FROM items WHERE id=?", [[req.params.id]],
-    (err, data, fields) => {
-        if (err) {
-            console.log(err);
-        }
-        connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, item, fields) => {
-            if (err) console.log(err);
-        
-        console.log('*******************');
-        console.log(item);
-
-        item = item.map(el => {
-            return el.cat_id;
-        });
-
-        console.log(item);
-        if(item.length != 0) {
-        connection.query("SELECT * FROM category WHERE id in ?", [[item]],
-        (err, thisa, fields) => {
-            if (err) {
-                console.log(err);
+    app.get('/items/:id', async (req, res) => {
+        const { id } = req.params;
+        const data = await prisma.item.findFirst({
+            where: {
+                id: Number(id),
+            },
+            include: {
+                location: true,
+                categories: {
+                    include: {
+                        category: true,
+                    }
+                },
             }
-        console.log(thisa);
-        console.log(item);
-        console.log(data);
-        res.render('item', {
-            'item': data[0],
-            'thisa': thisa,
-            'params': req.params.id,
-            'admin': req.session.admin,
-            'promocode': promocode,
-            'act': "index",
-            'Items': data,
-            'name': req.session.name,
-            'vkid': req.session.vkid,
-            'userId': req.session.id,
-            'emoji': req.session.emoji,
-            'userinfo': req.session.text,
-            'tel': req.session.tel,
-            'gender': req.session.gender,
-            'auth': req.session.auth,
         });
-        })
-        } else {
+        let a = new Array;
+        a.push(data);
+        let b = a[0].categories;
+
+        b = b.map(el => {
+            return el.category;
+        });
+        console.log(b);
+        console.log("DATA сверху")
             res.render('item', {
-                'item': data[0],
-                'thisa': [],
+                'thisa': b,
                 'params': req.params.id,
                 'admin': req.session.admin,
                 'promocode': promocode,
                 'act': "index",
-                'Items': data,
+                'Items': a,
                 'name': req.session.name,
                 'vkid': req.session.vkid,
                 'userId': req.session.id,
@@ -669,10 +620,8 @@ app.post('/delmsg', (req, res) => {
                 'gender': req.session.gender,
                 'auth': req.session.auth,
             });
-    }
     });
-});
-});
+
 app.get('/catto/:id', isAuth, (req,res) => {
     connection.query("Select * from itemstocat where item_id = ?", [[req.params.id]], (err, item, fields) => {
         if (err) throw err;
@@ -828,17 +777,15 @@ app.get('/home/:id', (req, res) => {
     console.log(want);
     if(want.length == 0) {
         mirror = 'Ошибка: В данной категории нет объектов!';
-        index(promocode, mirror, res, req);
+        index(promocode, mirror, req, res);
     } else {
     connection.query("Select * from items where id in ?", [[want], [itemsPerPage]], (err, data, fields) => {
         if (err) console.log(err);
         let mirror;       
         connection.query("SELECT * from category", (err, dot, fields) => {
-            connection.query("select count(id) as count from offer", (err, many, fields) => {
-                console.log(many);
+
                 mirror = false;
             res.render('index', {
-                'many': many[0].count,
                 'items': data,
                 'all': false,
                 'error': mirror,
@@ -859,9 +806,7 @@ app.get('/home/:id', (req, res) => {
             });
         });
     });
-    });
     }
 });
-
 });
 });

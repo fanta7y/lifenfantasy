@@ -32,7 +32,7 @@ function isAuth (req, res, next) {
         index(promocode, "Ошибка: Вы не авторизованы!", req, res);
     }
 }
-function isAdmin(req, next) {
+function isAdmin(req, res, next) {
     if (req.session.admin == promocode) {
         let err = false;
         next();
@@ -115,7 +115,7 @@ app.get('/msg', isAuth, async (req, res) => {
         });
 
     // });
-    app.post('/upload', upload.single('file'), async (req, res, next) => {
+    app.post('/upload', isAuth, upload.single('file'), async (req, res, next) => {
         const { name, text, location_id } = req.body;
         const { originalname } = req.file;
             await prisma.item.create({
@@ -128,41 +128,62 @@ app.get('/msg', isAuth, async (req, res) => {
             });
             res.redirect('/');
         });
-        app.post('/submit', (req, res, next) => {
-            connection.query("SELECT * FROM offer WHERE id=?", [req.body.id], (err, data, fields) => {
-                if(err) {
-                    console.log(err);
+        app.post('/submit', async (req, res, next) => {
+            // connection.query("SELECT * FROM offer WHERE id=?", [req.body.id], (err, data, fields) => {
+            //     if(err) {
+            //         console.log(err);
+            //     }
+            //     connection.query("INSERT INTO items(title, text, filename) VALUES (?, ?, ?)", 
+            //     [[data[0].title], [data[0].text], [data[0].image]], (err, data, fields) => {
+            //     if(err) {
+            //         console.log(err);
+            //     }
+            //     connection.query("DELETE FROM offer WHERE id = ?", [req.body.id], function(err, data, fields){
+            //         if(err) {
+            //             console.log(err);
+            //         }
+            //     });
+            const { id } = req.body;
+            let data = await prisma.offer.findFirst({
+                where: {
+                    id: Number(id)
                 }
-                connection.query("INSERT INTO items(title, text, filename) VALUES (?, ?, ?)", 
-                [[data[0].title], [data[0].text], [data[0].image]], (err, data, fields) => {
-                if(err) {
-                    console.log(err);
+            });
+            const { title, text, filename, location_id } = data;
+            await prisma.item.create({
+               data: {
+                    title,
+                    text,
+                    filename,
+                    location_id: Number(location_id),
+               } 
+            });
+            await prisma.offer.delete({
+                where: {
+                    id: Number(id)
                 }
-                connection.query("DELETE FROM offer WHERE id = ?", [req.body.id], function(err, data, fields){
-                    if(err) {
-                        console.log(err);
-                    }
-                });
-                res.redirect('/');
             });
-            });
+            res.redirect('/');
         });
             
     let active;
-    app.post('/offer', upload.single('file'), (req, res, next) => {
+    app.post('/offer', upload.single('file'), async (req, res, next) => {
         console.log('_____________')
         console.log(req.body.name);
         console.log(req.body.text);
         console.log(req.file.originalname);
-        connection.query("INSERT INTO offer (title, text, image, author) VALUES (?, ?, ?, ?)", 
-        [[req.body.name], [req.body.text], [req.file.originalname], [req.body.author]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
+        const { name, text, author, location_id } = req.body;
+        await prisma.offer.create({
+            data: {
+                title: name,
+                text,
+                filename: req.file.originalname,
+                author,
+                location_id: Number(location_id),
             }
-            console.log(req.body.author);
-            res.redirect('/');
         });
-        });
+        res.redirect("/");
+    });
 app.get('/page', (req, res) => {
 res.redirect('/page/' + req.session.vkid);
 })
@@ -205,7 +226,7 @@ async function index(promocode, mirror, req, res){
         index(promocode, false, req, res);
     });
 
-app.get('/photo',  (req,res) => {
+app.get('/photo', isAuth, (req,res) => {
     active = 'app';
     res.render('form', {
         'admin': req.session.admin,
@@ -278,13 +299,19 @@ app.get('/app', (req,res) => {
 
     });
 });
-app.post('/delete', isAuth, isAdmin, (req, res) => {
-        connection.query("DELETE FROM items WHERE id = ?", [[req.body.id]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
-            res.redirect('/');
-        });
+app.post('/delete', isAuth, isAdmin, async (req, res) => {
+        // connection.query("DELETE FROM items WHERE id = ?", [[req.body.id]], (err, data, fields) => {
+        //     if(err) {
+        //         console.log(err);
+        //     }
+        //     res.redirect('/');
+        // });
+    await prisma.item.delete({
+        where: {
+            id: Number(req.body.id)
+        }
+    })
+    res.redirect('/');
 });
 app.post('/update', isAdmin, (req,res) => {
     let source = Number(req.body.id);

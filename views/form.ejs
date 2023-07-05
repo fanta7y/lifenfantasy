@@ -9,7 +9,7 @@
         <img class="back-arrow" src="/img/back-arrow.png">
     </a>  
     <div class="upload">
-        <form <% if(admin == promocode) {%> action="/upload" <%} else {%> action="/upload" <%}%> enctype="multipart/form-data" method="post">
+        <form <% if(admin == promocode) {%> action="/upload" <%} else {%> action="/offer" <%}%> enctype="multipart/form-data" method="post">
             Заголовок <br>
             <input type="text" name="name" class="form__title" autocomplete="off" maxlength="20"><br>
             Текст <br>
@@ -17,7 +17,7 @@
             Изображениe <br>
             <input type="file" name="file" id="file"accept="image/png, image/jpeg" hidden>
             <label for="file"><img src="img/plus.png" alt="/" class="png"></label><br>
-            <!-- <% if(admin != promocode) {%> <input value="<%=vkid%>" type="text" name="author" hidden><%}%> -->
+            <% if(admin != promocode) {%> <input value="<%=vkid%>" type="text" name="author" hidden><%}%>
             <input type="submit" id="sub" value="Загрузить" hidden>
             <input type="number" name="location_id"><br>
             <label for="sub" class="custom-file-upload">

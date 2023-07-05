@@ -129,20 +129,6 @@ app.get('/msg', isAuth, async (req, res) => {
             res.redirect('/');
         });
         app.post('/submit', async (req, res, next) => {
-            // connection.query("SELECT * FROM offer WHERE id=?", [req.body.id], (err, data, fields) => {
-            //     if(err) {
-            //         console.log(err);
-            //     }
-            //     connection.query("INSERT INTO items(title, text, filename) VALUES (?, ?, ?)", 
-            //     [[data[0].title], [data[0].text], [data[0].image]], (err, data, fields) => {
-            //     if(err) {
-            //         console.log(err);
-            //     }
-            //     connection.query("DELETE FROM offer WHERE id = ?", [req.body.id], function(err, data, fields){
-            //         if(err) {
-            //             console.log(err);
-            //         }
-            //     });
             const { id } = req.body;
             let data = await prisma.offer.findFirst({
                 where: {
@@ -300,12 +286,6 @@ app.get('/app', (req,res) => {
     });
 });
 app.post('/delete', isAuth, isAdmin, async (req, res) => {
-        // connection.query("DELETE FROM items WHERE id = ?", [[req.body.id]], (err, data, fields) => {
-        //     if(err) {
-        //         console.log(err);
-        //     }
-        //     res.redirect('/');
-        // });
     await prisma.item.delete({
         where: {
             id: Number(req.body.id)
@@ -313,15 +293,17 @@ app.post('/delete', isAuth, isAdmin, async (req, res) => {
     })
     res.redirect('/');
 });
-app.post('/update', isAdmin, (req,res) => {
+app.post('/update', isAdmin, async (req,res) => {
     let source = Number(req.body.id);
-    connection.query("UPDATE items SET title=?, text=? WHERE id = ?",
-    [[req.body.title], [req.body.text], [req.body.id]],(err, data, fields) => {
-        if(err) {
-            console.log(err);
+    const { title, text, id } = req.body;
+    await prisma.item.update({
+        where: {id: Number(id)},
+        data: {
+            title,
+            text
         }
-        res.redirect('/');
-    });
+    })
+    res.redirect('/');
 });
 app.get('/passport/reg', (req,res) => {
     active = 'pass';

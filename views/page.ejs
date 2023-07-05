@@ -1,7 +1,7 @@
 <%- include('../particle/header.ejs') %>
 <div class="area">
-    <h1><%= userdata.name %></h1>
-    <p><%= userdata.info %></p>
+    <h1>&<%=userdata.Emoji%><%= userdata.username %></h1>
+    <p><%= userdata.Info %></p>
     <% if(params == vkid) { %>
         <form action="/msg" class="inlineform">
             <button type="submit" class="pla">Сообщения</button>

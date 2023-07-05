@@ -60,30 +60,32 @@ model ItemRelCategory {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  username       String   @db.VarChar(255)
-  vkid       String   @db.VarChar(255)
-  password   String   @db.Text
-  Phone      BigInt
+  id         Int       @id @default(autoincrement())
+  username   String    @db.VarChar(255)
+  vkid       String    @unique @db.VarChar(255)
+  password   String    @db.Text
+  Phone      String       
   Gender     Int
-  Info       String   @db.Text
-  Emoji      String   @db.VarChar(255)
-  date       String   @db.VarChar(255)
-  private    String   @db.VarChar(255)
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  Info       String    @db.Text
+  Emoji      String    @db.VarChar(255)
+  date       String    @db.VarChar(255)
+  private    String    @db.VarChar(255)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+  Message    Message[]
 
   @@map("users")
 }
 
 model Message {
   id         Int      @id @default(autoincrement())
-  sender     String   @db.VarChar(255)
-  recipient  String   @db.VarChar(255)
   text       String   @db.Text
   team       Int
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
+  User     User     @relation(fields: [user_id], references: [vkid])
+  user_id  String   @db.VarChar(255)
+  recipient  String   @db.VarChar(255)
 
   @@map("msg")
 }

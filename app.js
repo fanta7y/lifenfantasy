@@ -62,53 +62,57 @@ app.use(session({
     saveUninitialized: true
 }));
 io.on('connection', (socket, req, res) => {
-    socket.on('chat message', (msg) => {
-        connection.query(
-            "INSERT INTO msg (time, sender, text, team) VALUES (NOW(), ?, ?, '1')",
-            [[msg.user], [msg.content]],
-            (err, data, fields) => {
-                if (err) {
-                    console.log(err);
-                }                            
-            }
-        );
+    socket.on('chat message', async (msg) => {
+        await prisma.message.create({
+            data: {
+                user_id: msg.id,
+                text: msg.content,
+                team: 1,
+                recipient: 'team',
+            },
+        })
+        console.log(msg);
+        console.log('msg');
         io.emit('chat message', {
             'emoji': msg.emoji,
             'content': msg.content,
             'user': msg.user,
+            'id': msg.id,
     });
         //'<span class="nickname">' + msg.user + '</span>' + ': ' + msg.content);
     });
 });
-app.get('/msg', isAuth, (req, res) => {
+app.get('/msg', isAuth, async (req, res) => {
     // select from database and pass data to render
-        connection.query("SELECT Date_format(time, '%k:%i') as time, id, sender, text FROM msg WHERE team='1' order by time asc", (err, data, fields) => {
-        if(err) {
-            console.log(err);
+    let msg = await prisma.message.findMany({
+        where: {
+            team: 1
+        },
+        include: {
+            User: true
         }
-    
-    console.log(data);
+    })
+    function splitString(stringToSplit) {
+        // console.log('"' + stringToSplit + '"');
+        var arrayOfStrings = stringToSplit.split(" ");
+        return arrayOfStrings;
+        }
+    let name = splitString(req.session.name);
+    console.log(name);
+    console.log(msg);
+    console.log("data is really up");
     active = 'pass';
-    connection.query("SELECT name, vkid, emoji FROM users", (err, users, fields) => {
-        if(err) {
-            console.log(err);
-        }
-        connection.query("SELECT id FROM msg ORDER BY id DESC LIMIT 1;", (err, ids, fields) => {
+    console.log(req.session);
         res.render('msg', {
-            'users': users,
             'sess': req.session.vkid,
+            'sessname': name[0],
             'sessava': req.session.emoji,
-            'sessname': req.session.name,
             'auth': true,
             'act': active,
-            'mess': data,
+            'mess': msg,
             'ava': req.session.emoji,
-            'lastid': (Number(ids[0]) + 1)
         });
         });
-    });
-    });
-});
 
     // });
     app.post('/upload', upload.single('file'), async (req, res, next) => {
@@ -346,7 +350,7 @@ app.get('/passport/input', (req,res) => {
                                 username: username,
                                 vkid: vkid,
                                 password: password,
-                                Phone: Number(phone),
+                                Phone: phone,
                                 Gender: Number(Gender),
                                 Info: text,
                                 Emoji: emoji,
@@ -368,10 +372,10 @@ app.get('/passport/input', (req,res) => {
                                 req.session.name = data[0].name;
                                 req.session.vkid = data[0].vkid;
                                 req.session.id = data[0].id;
-                                req.session.emoji = data[0].emoji;
-                                req.session.text = data[0].info;
-                                req.session.tel = data[0].phone;
-                                req.session.gender = data[0].gender;
+                                req.session.emoji = data[0].Emoji;
+                                req.session.text = data[0].Info;
+                                req.session.tel = data[0].Phone;
+                                req.session.gender = data[0].Gender;
                                 req.session.auth = true;
 
                                 res.redirect('/');
@@ -401,29 +405,31 @@ app.get('/passport/input', (req,res) => {
                 vkid: req.body.vkid,
             }
         }));
-
-                if(data.length != 0) {
+        console.log(data);
+        console.log("data up");
+                if(data[0] != null) {
                 bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
                     console.log(result);
                 
                 console.log(data);
             if(result) {
-                console.log(data[0].id);
+                console.log(data[0].Phone);
+                console.log('Hi!')
                 req.session.admin = data[0].private;
-                req.session.name = data[0].name;
+                req.session.name = data[0].username;
                 req.session.vkid = data[0].vkid;
                 req.session.id = data[0].id;
-                req.session.emoji = data[0].emoji;
-                req.session.text = data[0].info;
-                req.session.tel = data[0].phone;
-                req.session.gender = data[0].gender;
+                req.session.emoji = data[0].Emoji;
+                req.session.text = data[0].Info;
+                req.session.tel = data[0].Phone;
+                req.session.gender = data[0].Gender;
                 req.session.auth = true;
                 res.redirect('/');
             } else{
                 res.render('input', {
                     'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
                     'act': active,
-                    'name': req.session.name,
+                    'name': req.session.username,
                     'vkid': req.session.vkid,
                     'id': req.session.id,
                     'emoji': req.session.emoji,
@@ -555,28 +561,28 @@ app.post('/delmsg', (req, res) => {
             'auth': req.session.auth
         });
     })
-    app.get('/page/:id', (req, res) => {
-        connection.query("SELECT * FROM users WHERE vkid=?", [[req.params.id]],
-        (err, data, fields) => {
-            if (err) {
-                console.log(err);
+    app.get('/page/:id', async (req, res) => {
+        let data = await prisma.user.findFirst({
+            where: {
+                vkid: req.params.id,
             }
-            res.render('page', {
-                'userdata': data[0],
-                'params': req.params.id,
-                'admin': req.session.admin,
-                'promocode': promocode,
-                'act': "pass",
-                'Items': data,
-                'name': req.session.name,
-                'vkid': req.session.vkid,
-                'userId': req.session.id,
-                'emoji': req.session.emoji,
-                'userinfo': req.session.text,
-                'tel': req.session.tel,
-                'gender': req.session.gender,
-                'auth': req.session.auth,
-            });
+        });
+        console.log(data);
+        res.render('page', {
+            'userdata': data,
+            'params': req.params.id,
+            'admin': req.session.admin,
+            'promocode': promocode,
+            'act': "pass",
+            'Items': data,
+            'name': req.session.name,
+            'vkid': req.session.vkid,
+            'userId': req.session.id,
+            'emoji': req.session.emoji,
+            'userinfo': req.session.text,
+            'tel': req.session.tel,
+            'gender': req.session.gender,
+            'auth': req.session.auth,
         });
     }); 
 

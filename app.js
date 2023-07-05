@@ -123,7 +123,7 @@ app.get('/msg', isAuth, async (req, res) => {
                     title: name,
                     text,
                     filename: originalname,
-                    location_id: Number(location_id),
+                    location_id: location_id,
                 }
             });
             res.redirect('/');
@@ -135,13 +135,13 @@ app.get('/msg', isAuth, async (req, res) => {
                     id: Number(id)
                 }
             });
-            const { title, text, filename, location_id } = data;
+            const { title, text, filename, author } = data;
             await prisma.item.create({
                data: {
                     title,
                     text,
                     filename,
-                    location_id: Number(location_id),
+                    location_id: author,
                } 
             });
             await prisma.offer.delete({
@@ -165,7 +165,6 @@ app.get('/msg', isAuth, async (req, res) => {
                 text,
                 filename: req.file.originalname,
                 author,
-                location_id: Number(location_id),
             }
         });
         res.redirect("/");
@@ -190,6 +189,7 @@ async function index(promocode, mirror, req, res){
     });
     console.log(item);
     res.render('index', {
+        'all': true,
         'many': off.length,
         'items': (item) ? item : {},
         'error': mirror,
@@ -286,6 +286,11 @@ app.get('/app', (req,res) => {
     });
 });
 app.post('/delete', isAuth, isAdmin, async (req, res) => {
+    await prisma.itemRelCategory.deleteMany({
+        where: {
+            item_id: Number(req.body.id)
+        }
+    })
     await prisma.item.delete({
         where: {
             id: Number(req.body.id)
@@ -342,57 +347,114 @@ app.get('/passport/input', (req,res) => {
     }
     );
 });
-    // } else {
-    //     alert('Ошибка: вы не заполнили одно из обязательных полей!');
-    // }
+app.post('/reg', (req, res) => {
+    if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.phone != '' && req.body.date != '') {
+        let salt = 10;
+        const { username, vkid, userpass, phone, Gender, text, emoji, date, private} = req.body;
+        bcrypt.hash(userpass, salt, async (err, password) => {
+            console.log(password);
+            console.log(Gender);
+            console.log(phone);
+                    await prisma.user.create({
+                        data: {
+                            username: username,
+                            vkid: vkid,
+                            password: password,
+                            Phone: phone,
+                            Gender: Number(Gender),
+                            Info: text,
+                            Emoji: emoji,
+                            date: date,
+                            private: private
+                        }
+                    });
+                    let a = await prisma.user.findFirst({
+                        where: {
+                            vkid: vkid,
+                            password: password,
+                        }
+                    })
+                    let data = [];
+                    data.push(a);
+                            console.log(data);
+                            console.log('data');
+                            req.session.admin = data[0].private;
+                            req.session.name = data[0].name;
+                            req.session.vkid = data[0].vkid;
+                            req.session.id = data[0].id;
+                            req.session.emoji = data[0].Emoji;
+                            req.session.text = data[0].Info;
+                            req.session.tel = data[0].Phone;
+                            req.session.gender = data[0].Gender;
+                            req.session.auth = true;
 
-    app.post('/reg', (req, res) => {
-        if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.phone != '' && req.body.date != '') {
-            let salt = 10;
-            const { username, vkid, userpass, phone, Gender, text, emoji, date, private} = req.body;
-            bcrypt.hash(userpass, salt, async (err, password) => {
-                console.log(password);
-                console.log(Gender);
-                console.log(phone);
-                        await prisma.user.create({
-                            data: {
-                                username: username,
-                                vkid: vkid,
-                                password: password,
-                                Phone: phone,
-                                Gender: Number(Gender),
-                                Info: text,
-                                Emoji: emoji,
-                                date: date,
-                                private: private
-                            }
-                        });
-                        let a = await prisma.user.findFirst({
-                            where: {
-                                vkid: vkid,
-                                password: password,
-                            }
-                        })
-                        let data = [];
-                        data.push(a);
-                                console.log(data);
-                                console.log('data');
-                                req.session.admin = data[0].private;
-                                req.session.name = data[0].name;
-                                req.session.vkid = data[0].vkid;
-                                req.session.id = data[0].id;
-                                req.session.emoji = data[0].Emoji;
-                                req.session.text = data[0].Info;
-                                req.session.tel = data[0].Phone;
-                                req.session.gender = data[0].Gender;
-                                req.session.auth = true;
+                            res.redirect('/');
+        });
+    } else {
+        active = 'pass';
+        res.render('reg', {
+            'error': 'Не оставляйте поля пустыми!',
+            'name': req.session.name,
+            'vkid': req.session.vkid,
+            'id': req.session.id,
+            'emoji': req.session.emoji,
+            'userinfo': req.session.text,
+            'tel': req.session.tel,
+            'gender': req.session.gender,
+            'auth': req.session.auth,        
+            'act': active,
+        });
+    }
+});
 
-                                res.redirect('/');
+app.post('/login', async (req, res) => {
+    let error = false;
+    let data = new Array;
+    data.push(await prisma.user.findFirst({
+        where: {
+            vkid: req.body.vkid,
+        }
+    }));
+    console.log(data);
+    console.log("data up");
+            if(data[0] != null) {
+            bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
+                console.log(result);
+            
+            console.log(data);
+        if(result) {
+            console.log(data[0].Phone);
+            console.log('Hi!')
+            req.session.admin = data[0].private;
+            req.session.name = data[0].username;
+            req.session.vkid = data[0].vkid;
+            req.session.id = data[0].id;
+            req.session.emoji = data[0].Emoji;
+            req.session.text = data[0].Info;
+            req.session.tel = data[0].Phone;
+            req.session.gender = data[0].Gender;
+            req.session.auth = true;
+            res.redirect('/');
+        } else{
+            res.render('input', {
+                'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
+                'act': active,
+                'name': req.session.username,
+                'vkid': req.session.vkid,
+                'id': req.session.id,
+                'emoji': req.session.emoji,
+                'userinfo': req.session.text,
+                'tel': req.session.tel,
+                'gender': req.session.gender,
+                'auth': req.session.auth,        
+                'act': active,
             });
+            }
+        });
         } else {
-            active = 'pass';
-            res.render('reg', {
-                'error': 'Не оставляйте поля пустыми!',
+            res.render('input', {
+                'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
+                'act': active,
                 'name': req.session.name,
                 'vkid': req.session.vkid,
                 'id': req.session.id,
@@ -404,186 +466,131 @@ app.get('/passport/input', (req,res) => {
                 'act': active,
             });
         }
-    });
+    });  
 
-    app.post('/login', async (req, res) => {
-        let error = false;
-        let data = new Array;
-        data.push(await prisma.user.findFirst({
-            where: {
-                vkid: req.body.vkid,
-            }
-        }));
-        console.log(data);
-        console.log("data up");
-                if(data[0] != null) {
-                bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
-                    console.log(result);
-                
-                console.log(data);
-            if(result) {
-                console.log(data[0].Phone);
-                console.log('Hi!')
-                req.session.admin = data[0].private;
-                req.session.name = data[0].username;
-                req.session.vkid = data[0].vkid;
-                req.session.id = data[0].id;
-                req.session.emoji = data[0].Emoji;
-                req.session.text = data[0].Info;
-                req.session.tel = data[0].Phone;
-                req.session.gender = data[0].Gender;
-                req.session.auth = true;
-                res.redirect('/');
-            } else{
-                res.render('input', {
-                    'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
-                    'act': active,
-                    'name': req.session.username,
-                    'vkid': req.session.vkid,
-                    'id': req.session.id,
-                    'emoji': req.session.emoji,
-                    'userinfo': req.session.text,
-                    'tel': req.session.tel,
-                    'gender': req.session.gender,
-                    'auth': req.session.auth,        
-                    'act': active,
-                });
-                }
-            });
-            } else {
-                res.render('input', {
-                    'error': 'Ошибка: пользователь не найден. Проверьте правильность написания логина и пароля!',
-                    'act': active,
-                    'name': req.session.name,
-                    'vkid': req.session.vkid,
-                    'id': req.session.id,
-                    'emoji': req.session.emoji,
-                    'userinfo': req.session.text,
-                    'tel': req.session.tel,
-                    'gender': req.session.gender,
-                    'auth': req.session.auth,        
-                    'act': active,
-                });
-            }
-        });  
+app.post('/logout', isAuth, (req, res) => {
+    req.session.auth = false;  
+    res.redirect('/');
+});
 
-    app.post('/logout', isAuth, (req, res) => {
-        req.session.auth = false;  
-        res.redirect('/');
-    });
-    app.post('/items', (req, res) => {
-        let offset = (req.body.offset);
-        connection.query("SELECT * FROM items limit 4 offset ?", [[offset]], (err, data, fields) => {
-            if (err) {
-                console.log(err);
-            }
-            console.log(data);
-                res.status(200).send(data);
-            });
-    });
     
 
-    app.get('/offerlist',  async (req, res) => {
-        // connection.query("SELECT * FROM offer order by id desc limit ? offset ?", [[ipp], [lots]], (err, data, fields) => {
-        const data = await prisma.Offer.findMany({
+app.get('/offerlist',  async (req, res) => {
+    const data = await prisma.Offer.findMany({
 
+    });
+        active = 'index';
+        res.render('offers', {
+            'admin': req.session.admin,
+            'promocode': promocode,
+            'error': req.session.error,
+            'name': req.session.name,
+            'vkid': req.session.vkid,
+            'id': req.session.id,
+            'emoji': req.session.emoji,
+            'userinfo': req.session.text,
+            'tel': req.session.tel,
+            'gender': req.session.gender,
+            'auth': req.session.auth,
+            'act': active,
+            'Items': data,
         });
-            active = 'index';
-            res.render('offers', {
-                'admin': req.session.admin,
-                'promocode': promocode,
-                'error': req.session.error,
-                'name': req.session.name,
-                'vkid': req.session.vkid,
-                'id': req.session.id,
-                'emoji': req.session.emoji,
-                'userinfo': req.session.text,
-                'tel': req.session.tel,
-                'gender': req.session.gender,
-                'auth': req.session.auth,
-                'act': active,
-                'Items': data,
-            });
+    }
+    );
+app.post('/deleteof', isAuth, isAdmin, async (req, res) => {
+    await prisma.offer.delete({
+        where: {
+            id: Number(req.body.id)
         }
-        );
-    app.post('/deleteof', isAuth, isAdmin, (req, res) => {
-        connection.query("DELETE FROM offer WHERE id = ?", [req.body.id], function(err, data, fields){
-            if(err) {
-                console.log(err);
-            }
-            res.redirect('/');
-        });
-});
-app.post('/delmsg', (req, res) => {
-    connection.query("DELETE FROM msg WHERE id = ?", [req.body.msgid], function(err, data, fields){
-        if(err) {
-            console.log(err);
-        }
-        res.redirect('/msg');
-    });
-});
-    app.post('/addevent', isAuth, (req, res, next) => {
-        connection.query("INSERT INTO events(id, name, date, type, description, everyYear, color) VALUES (?, ?, ?, ?, ?, ?)", 
-        [[id], [req.body.name], [req.body.date], [req.body.type], [req.body.desc], [req.body.everyYear], [req.body.color]], (err, data, fields) => {
-            if(err) {
-                console.log(err);
-            }
-            res.redirect('/table');
-        });
-    });
-
-    app.post('/cat', (req, res) => {
-        if(req.body.name != '') {
-        connection.query(
-            "INSERT INTO category (name, descr, color) VALUES (?, ?, ?)",
-            [[req.body.name], [req.body.descr], [req.body.clr]],
-            (err, data, fields) => {
-                if (err) {
-                    console.log(err);
-                }
-                res.redirect('/');
-            }
-        );
-        } else {
-            let error = "Ошибка: название не может быть пустым!";
-            index(promocode, error, req, res);
-        }
-    });
-    app.post('/dropcat', (req, res) => {
-        console.log(req.body.plc);
-        console.log('up');
-        console.log(req.body.id);
-        connection.query(
-            "delete from itemstocat where cat_id=? and item_id=?", 
-            [[req.body.plc], [req.body.id]],
-            (err, data, fields) => {
-                if (err) {
-                    console.log(err);
-                }
-                res.redirect('/catto/' + req.body.id);
-            }
-        );
-    });
-    app.get('/catform', isAuth, (req, res) => {
-        res.render('catadd', {
-            'act': "app",    
-            'auth': req.session.auth
-        });
     })
-    app.get('/page/:id', async (req, res) => {
-        let data = await prisma.user.findFirst({
-            where: {
-                vkid: req.params.id,
-            }
-        });
-        console.log(data);
-        res.render('page', {
-            'userdata': data,
+    res.redirect('/');
+});
+app.post('/delmsg', async (req, res) => {
+    await prisma.message.delete({
+        where: {
+            id: msgid
+        }
+    })
+    res.redirect('/msg');
+});
+
+app.post('/cat', async (req, res) => {
+    if(req.body.name != '') {
+    await prisma.category.create({
+        data: {
+            title:  req.body.name,
+            descr: req.body.descr,
+            color: req.body.clr
+        }
+    });
+            res.redirect('/');
+    } else {
+        let error = "Ошибка: название не может быть пустым!";
+        index(promocode, error, req, res);
+    }
+});
+app.get('/catform', isAuth, (req, res) => {
+    res.render('catadd', {
+        'act': "app",    
+        'auth': req.session.auth
+    });
+})
+app.get('/page/:id', async (req, res) => {
+    let data = await prisma.user.findFirst({
+        where: {
+            vkid: req.params.id,
+        }
+    });
+    console.log(data);
+    res.render('page', {
+        'userdata': data,
+        'params': req.params.id,
+        'admin': req.session.admin,
+        'promocode': promocode,
+        'act': "pass",
+        'Items': data,
+        'name': req.session.name,
+        'vkid': req.session.vkid,
+        'userId': req.session.id,
+        'emoji': req.session.emoji,
+        'userinfo': req.session.text,
+        'tel': req.session.tel,
+        'gender': req.session.gender,
+        'auth': req.session.auth,
+    });
+}); 
+
+app.get('/items/:id', async (req, res) => {
+    const { id } = req.params;
+    const data = await prisma.item.findFirst({
+        where: {
+            id: Number(id),
+        },
+        include: {
+            location: true,
+            categories: {
+                include: {
+                    category: true,
+                }
+            },
+        }
+    });
+    let a = new Array;
+    a.push(data);
+    let b = a[0].categories;
+
+    b = b.map(el => {
+        return el.category;
+    });
+    console.log(b);
+    console.log("DATA сверху")
+        res.render('item', {
+            'thisa': b,
             'params': req.params.id,
             'admin': req.session.admin,
             'promocode': promocode,
-            'act': "pass",
-            'Items': data,
+            'act': "index",
+            'Items': a,
             'name': req.session.name,
             'vkid': req.session.vkid,
             'userId': req.session.id,
@@ -593,163 +600,62 @@ app.post('/delmsg', (req, res) => {
             'gender': req.session.gender,
             'auth': req.session.auth,
         });
-    }); 
+});
 
-    app.get('/items/:id', async (req, res) => {
-        const { id } = req.params;
-        const data = await prisma.item.findFirst({
-            where: {
-                id: Number(id),
-            },
-            include: {
-                location: true,
-                categories: {
-                    include: {
-                        category: true,
-                    }
-                },
-            }
-        });
-        let a = new Array;
-        a.push(data);
-        let b = a[0].categories;
-
-        b = b.map(el => {
-            return el.category;
-        });
-        console.log(b);
-        console.log("DATA сверху")
-            res.render('item', {
-                'thisa': b,
-                'params': req.params.id,
-                'admin': req.session.admin,
-                'promocode': promocode,
-                'act': "index",
-                'Items': a,
-                'name': req.session.name,
-                'vkid': req.session.vkid,
-                'userId': req.session.id,
-                'emoji': req.session.emoji,
-                'userinfo': req.session.text,
-                'tel': req.session.tel,
-                'gender': req.session.gender,
-                'auth': req.session.auth,
-            });
+app.get('/catto/:id', isAuth, async (req,res) => {
+    let item = await prisma.itemRelCategory.findMany({
+        where: {
+            item_id: Number(req.params.id)
+        },
     });
-
-app.get('/catto/:id', isAuth, (req,res) => {
-    connection.query("Select * from itemstocat where item_id = ?", [[req.params.id]], (err, item, fields) => {
-        if (err) throw err;
-        if (typeof item !== 'undefined' && item.length > 0) {
-            item = item.map(el => {
-                return el.cat_id;
-            });
-            connection.query("select * from category where id = ? or id in ?", [[item[0]], [item]], (err, data, fields ) => {
-                if (err) throw err;
-                connection.query("Select * from category where id NOT IN ?", [[item]], (err, notin, fields) => {
-                    res.render('numb', {
-                        'data': data,
-                        'notin': notin,
-                        'params': req.params.id,
-                        'admin': req.session.admin,
-                        'promocode': promocode,
-                        'Items': data,
-                        'name': req.session.name,
-                        'vkid': req.session.vkid,
-                        'userId': req.session.id,
-                        'emoji': req.session.emoji,
-                        'userinfo': req.session.text,
-                        'tel': req.session.tel,
-                        'gender': req.session.gender,
-                        'auth': req.session.auth,
-                        'act': "app"
-                    });
-                });
-            });
-        } else { 
-            connection.query("Select * from category", (err, notin, fields) => {
-                res.render('numb', {
-                    'data': [],
-                    'notin': notin,
-                    'params': req.params.id,
-                    'admin': req.session.admin,
-                    'promocode': promocode,
-                    'name': req.session.name,
-                    'vkid': req.session.vkid,
-                    'userId': req.session.id,
-                    'emoji': req.session.emoji,
-                    'userinfo': req.session.text,
-                    'tel': req.session.tel,
-                    'gender': req.session.gender,
-                    'auth': req.session.auth,
-                    'act': "app"
-                });
-            });
+    console.log(item);
+    item = item.map(el => {
+        return el.category_id;
+    });
+    console.log(item);
+    let data = await prisma.category.findMany({
+        where: {
+            id: { in: item }
         }
-    })
-        // connection.query("select cat_id from itemstocat where item_id=?", [[req.params.id]], (err, numb, fields) => {
-        //     if (err) {
-        //         console.log(err);
-        //     }
-        //     numb = numb.map(el => {
-        //         return el.cat_id;
-        //     });
-        //     if(numb.length != 0) {
-        //     connection.query("select * from category where id = ? or id in ?", [[numb[0]], [numb]], (err, data, fields) => {
-        //         if (err) {
-        //             console.log(err);
-        //         }
-        //         connection.query("select * from category", (err, vars, fields) => {
-        //             res.render('numb', {
-        //                 'vars': vars,
-        //                 'data': data,
-        //                 'numb': numb,
-        //                 'params': req.params.id,
-        //                 'admin': req.session.admin,
-        //                 'promocode': promocode,
-        //                 'Items': data,
-        //                 'name': req.session.name,
-        //                 'vkid': req.session.vkid,
-        //                 'userId': req.session.id,
-        //                 'emoji': req.session.emoji,
-        //                 'userinfo': req.session.text,
-        //                 'tel': req.session.tel,
-        //                 'gender': req.session.gender,
-        //                 'auth': req.session.auth,
-        //                 'act': "app"
-        //             });
-        //         });
-        //     });
-        // } else {
-        //     connection.query("select * from category", (err, vars, fields) => {
-        //         res.render('numb', {
-        //             'vars': vars,
-        //             'data': [],
-        //             'numb': numb,
-        //             'params': req.params.id,
-        //             'admin': req.session.admin,
-        //             'promocode': promocode,
-        //             'name': req.session.name,
-        //             'vkid': req.session.vkid,
-        //             'userId': req.session.id,
-        //             'emoji': req.session.emoji,
-        //             'userinfo': req.session.text,
-        //             'tel': req.session.tel,
-        //             'gender': req.session.gender,
-        //             'auth': req.session.auth,
-        //             'act': "app"
-        //         });
-        //     });
-        // }
-        // });
     });
-app.post('/catadd', (req, res) => {
+    console.log(data);
+    console.log("data ^");
+    let notin = await prisma.category.findMany({
+        where: {
+            NOT:  {
+                id: {
+                    in: item
+                }
+            }
+        }
+    });
+    console.log("data" + data + "notin:" + notin);
+    res.render('numb', {
+        'data': data,
+        'notin': notin,
+        'params': req.params.id,
+        'admin': req.session.admin,
+        'promocode': promocode,
+        'Items': data,
+        'name': req.session.name,
+        'vkid': req.session.vkid,
+        'userId': req.session.id,
+        'emoji': req.session.emoji,
+        'userinfo': req.session.text,
+        'tel': req.session.tel,
+        'gender': req.session.gender,
+        'auth': req.session.auth,
+        'act': "app"
+    });
+});
+app.post('/catadd', async (req, res) => {
     let cats = true;
     if (req.body.catID != []) {
     cats = req.body.catID;
     }
     let items = req.body.id;
     console.log(cats);
+    console.log(cats != undefined);
     if(cats != undefined) {
         let b = new Array;
         let a = new Array;
@@ -760,47 +666,64 @@ app.post('/catadd', (req, res) => {
             b = [];
         }
         console.log(a);
-    connection.query("Delete from itemstocat where item_id=?", [[items]], (err, data, fields) => {
-        if (err) throw err;
-        connection.query("Insert into itemstocat (item_id, cat_id) values ?", [a], (err, data, fields) => {
-            if (err) throw  err;
-            res.redirect('/catto/' + items);
-        })
-    })
-    } else {
-        connection.query("Delete from itemstocat where item_id=?", [[items]], (err, data, fields) => {
-            if (err) throw err;
-            res.redirect('/catto/' + items);
+        await prisma.itemRelCategory.deleteMany({
+            where: {
+               item_id: Number(items)
+            }
         });
+        let c;
+        for(let i = 0; i < a.length; i++) {
+            let c = a[i];
+            await prisma.itemRelCategory.create({
+                data: {
+                    item_id: Number(c[0]),
+                    category_id: Number(c[1])
+                }
+            });
+    }
+            res.redirect('/catto/' + items);
+    } else {
+        await prisma.itemRelCategory.deleteMany({
+            where: {
+                item_id: Number(items)
+            }
+        });
+            res.redirect('/catto/' + items);
     }
 });
 
-app.get('/home/:id', (req, res) => {
+app.get('/home/:id', async (req, res) => {
     if(req.params.id == 'all') {
         res.redirect('/');
     }
-    const itemsPerPage = 4;
-    connection.query("Select count(id) as count from items", (err, data, fields) => {
-        const itemsCount = (data[0].count);
-        const pagesCount = Math.ceil(itemsCount / itemsPerPage);
-    connection.query("Select item_id from itemstocat where cat_id = ?", [[req.params.id]], (err, want, fields) => {
+    let want = await prisma.itemRelCategory.findMany({
+        where: {
+            category_id: Number(req.params.id)
+        }
+    })
+    let data = (await prisma.item.findMany()).length;
     if (err) console.log(err);
     want = want.map(el => {
         return el.item_id;
     });
 
     console.log(want);
-    if(want.length == 0) {
+    console.log('every time up)')
+    if(want.length == 0 || want == '') {
         mirror = 'Ошибка: В данной категории нет объектов!';
         index(promocode, mirror, req, res);
     } else {
-    connection.query("Select * from items where id in ?", [[want], [itemsPerPage]], (err, data, fields) => {
-        if (err) console.log(err);
+        data = await prisma.item.findMany({
+            where: {
+                id: {
+                    in: want
+                }
+            }
+        })
         let mirror;       
-        connection.query("SELECT * from category", (err, dot, fields) => {
-
+        let dot = await prisma.category.findMany();
                 mirror = false;
-            res.render('index', {
+            res.render('home', {
                 'items': data,
                 'all': false,
                 'error': mirror,
@@ -818,10 +741,6 @@ app.get('/home/:id', (req, res) => {
                 'tel': req.session.tel,
                 'gender': req.session.gender,
                 'auth': req.session.auth,
-            });
         });
-    });
     }
-});
-});
 });

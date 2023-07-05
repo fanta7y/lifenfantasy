@@ -18,28 +18,17 @@ model Item {
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
-  location    Location          @relation(fields: [location_id], references: [id])
-  location_id Int
+  location    User              @relation(fields: [location_id], references: [vkid])
+  location_id String
   categories  ItemRelCategory[]
 
   @@map("items")
 }
 
-model Location {
-  id          Int      @id @default(autoincrement())
-  title       String   @db.VarChar(255)
-  description String   @db.VarChar(255)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-
-  items Item[]
-
-  @@map("locations")
-}
-
 model Category {
   id         Int      @id @default(autoincrement())
   title      String   @db.VarChar(255)
+  descr      String   @db.Text
   color      String   @db.VarChar(255)
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -64,7 +53,7 @@ model User {
   username   String    @db.VarChar(255)
   vkid       String    @unique @db.VarChar(255)
   password   String    @db.Text
-  Phone      String       
+  Phone      String
   Gender     Int
   Info       String    @db.Text
   Emoji      String    @db.VarChar(255)
@@ -73,6 +62,7 @@ model User {
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now())
   Message    Message[]
+  Item       Item[]
 
   @@map("users")
 }
@@ -83,8 +73,8 @@ model Message {
   team       Int
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
-  User     User     @relation(fields: [user_id], references: [vkid])
-  user_id  String   @db.VarChar(255)
+  User       User     @relation(fields: [user_id], references: [vkid])
+  user_id    String   @db.VarChar(255)
   recipient  String   @db.VarChar(255)
 
   @@map("msg")
@@ -98,7 +88,6 @@ model Offer {
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   author      String   @db.VarChar(255)
-  location_id Int
 
   @@map("offers")
 }

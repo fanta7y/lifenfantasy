@@ -17,9 +17,8 @@
             Изображениe <br>
             <input type="file" name="file" id="file"accept="image/png, image/jpeg" hidden>
             <label for="file"><img src="img/plus.png" alt="/" class="png"></label><br>
-            <% if(admin != promocode) {%> <input value="<%=vkid%>" type="text" name="author" hidden><%}%>
+             <input value="<%=vkid%>" type="text" name="<% if(admin != promocode) {%>author<%} else {%>location_id<%}%>" hidden>
             <input type="submit" id="sub" value="Загрузить" hidden>
-            <input type="number" name="location_id"><br>
             <label for="sub" class="custom-file-upload">
                 Загрузить
             </label>

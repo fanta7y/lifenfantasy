@@ -4,6 +4,7 @@
 </a>    
 <div class="area">
         <h1><%= Items[0].title %></h1>
+        <h4>by <a href="/page/<%=Items[0].location_id%>"><%=Items[0].location_id%></a></h4>
         <span id="content"></span>
         <script> 
         let array = JSON.parse('<%- JSON.stringify(thisa) %>');
@@ -17,7 +18,7 @@
             content.appendChild(h3);
         }
             </script>
-    
+
     
         <p><%= Items[0].text %></p>
     </div>

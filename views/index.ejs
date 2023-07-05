@@ -2,7 +2,7 @@
 <script>
     let array;
 </script>
-        <div class="block">
+        <div class="block" >
 
             <header>
                 <% if(error != false){ 
@@ -37,7 +37,7 @@
             </form>
             <%}%> 
             <br>
-            <div class="objects">
+            <div class="objects" align="center">
                 <% for(let i = 0; i < items.length; i++ ){ %>
                         <div class="inline">
                             <a href="/Items/<%= items[i].id %>" class="nodec">
@@ -49,15 +49,16 @@
                                     return el.category;
                                 });
                                 %>
-                                <span id="content"></span>
+                                <span id="<%="content" + i%>"></span>
                                         <script> 
                                             array = JSON.parse('<%- JSON.stringify(b)%>');
                                             console.log(array);
                                             for(let i = 0; i < array.length; i++){
-                                                let content = document.getElementById('content');
+                                                let content = document.getElementById('<%="content" + i%>');
                                                 let h3 = document.createElement('h3');
                                                 h3.classList.add('section__category');
                                                 h3.style.backgroundColor = array[i].color;
+                                                h3.style.color = 'sandybrown';
                                                 h3.innerText = array[i].title;
 
                                                 content.appendChild(h3);

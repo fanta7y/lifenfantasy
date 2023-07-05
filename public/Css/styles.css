@@ -9,6 +9,7 @@ body {
 body{
   font-family: 'Roboto', sans-serif;
 }
+
 a:not([class]){
   color: rgb(2, 119, 2);
   font-weight: 550;
@@ -108,22 +109,21 @@ div.vkpost2x{
     width: 50%;
 }
 .inline{
-    display: inline-block;
+    display: block;
+    text-align: center;
     background-color: lightgreen;
-    margin: 5px 1% 6px 1%;
-    padding: 1% 1% 2% 1%;
+    margin: 5px 20% 6px 10%;
+    padding: 1% 1% 0.1% 1%;
     padding-top: auto;
     border: solid 1px;
-    border-radius: 5%;
-    width: 332px;
-    height: 332px;
+    border-radius: 5px;
+    width: 60%;
     box-shadow: 2px 5px 5px darkslategray;
 }
 .image {
-    border-radius: 5px;
-    max-height: 215px;
+    border-radius: 10px;
     margin-bottom: 10px;
-    max-width: 322.500px;
+    width: 80%;
 }
 .cool{
     font-size: 24px
@@ -385,7 +385,6 @@ div.parentyt {
   margin-left: 10px;
   margin-right: auto;
   display: inline-block;
-  width: 128px;
   border-radius: 8px;
   background-color: lightgreen;
   font-weight: 550;
@@ -677,4 +676,7 @@ form.delma{
 }
 .png{
   width: 39px;
+}
+.objects{
+  text-align: center;
 }

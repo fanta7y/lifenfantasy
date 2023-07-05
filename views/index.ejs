@@ -3,29 +3,7 @@
     let array;
 </script>
         <div class="block">
-            <script type="text/javascript" src=
-            "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" 
-                     integrity=
-            "sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" 
-                     crossorigin="anonymous" 
-                     referrerpolicy="no-referrer">
-                $(document).ready(function(){                
-                      $(window).bind('scroll',fetchMore);
-                 });
-              
-                 fetchMore = function (){
-                     if ( $(window).scrollTop() >= $(document).height()-$(window).height()-300 ){
-                         $(window).unbind('scroll',fetchMore);
-                          $.post('ajax/ajax_manager.php',{'action':'moreReviews','start':$('.review').length,'step':5 },
-                          function(data) {
-                             if(data.length>10){
-                                  $(data).insertBefore($('#moreHolder'));
-                                  $(window).bind('scroll',fetchMore);
-                             }
-                          });
-                      }
-                 }
-              </script>
+
             <header>
                 <% if(error != false){ 
                     console.log(error); %>
@@ -66,25 +44,25 @@
                                 <h2 class="titleone"> <%=items[i].title %> </h2>
                                 <% 
                                 let b = items[i].categories;
-
+                                
                                 b = b.map(el => {
                                     return el.category;
                                 });
                                 %>
                                 <span id="content"></span>
-                                <script> 
-                                    array = JSON.parse('<%- JSON.stringify(b)%>');
-                                    console.log(array);
-                                    for(let i = 0; i < array.length; i++){
-                                        let content = document.getElementById('content');
-                                        let h3 = document.createElement('h3');
-                                        h3.classList.add('section__category');
-                                        h3.style.backgroundColor = array[i].color;
-                                        h3.innerText = array[i].title;
+                                        <script> 
+                                            array = JSON.parse('<%- JSON.stringify(b)%>');
+                                            console.log(array);
+                                            for(let i = 0; i < array.length; i++){
+                                                let content = document.getElementById('content');
+                                                let h3 = document.createElement('h3');
+                                                h3.classList.add('section__category');
+                                                h3.style.backgroundColor = array[i].color;
+                                                h3.innerText = array[i].title;
 
-                                        content.appendChild(h3);
-                                    }
-                                </script>
+                                                content.appendChild(h3);
+                                            }
+                                        </script>
                                 <img src="/uploads/<%=items[i].filename %>" alt="/" class="image">
                                 <% if (admin == promocode) {%>
                                 <form action="/delete" method="POST">
@@ -93,6 +71,7 @@
                                         <label for="<%="sub" + items[i].id%>" class="custom-file-delete">
                                             Удалить
                                         </label>
+                                        
                                 </form> <br>
                                 <%}%>
                             </a>

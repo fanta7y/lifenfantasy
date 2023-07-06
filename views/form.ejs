@@ -15,13 +15,30 @@
             Текст <br>
             <textarea name="text" placeholder="<%=randomValue%>" autocomplete="off"></textarea> <br>
             Изображениe <br>
-            <input type="file" name="file" id="file"accept="image/png, image/jpeg" hidden>
-            <label for="file"><img src="img/plus.png" alt="/" class="png"></label><br>
+            <input type="file" name="file" id="file"accept="image/png, image/jpeg" hidden >
+            <label for="file"><img src="img/plus.png" alt="/" class="png" onchange="loadFile(event)"></label><br>
+            <img id="output"/>
+            <script>
+            var loadFile = function(event) {
+                var output = document.getElementById('output');
+                output.src = URL.createObjectURL(event.target.files[0]);
+                output.onload = function() {
+                URL.revokeObjectURL(output.src) // free memory
+                }
+            };
+            </script>
              <input value="<%=vkid%>" type="text" name="<% if(admin != promocode) {%>author<%} else {%>location_id<%}%>" hidden>
-            <input type="submit" id="sub" value="Загрузить" hidden>
+            <input type="submit" id="sub" value="Загрузить" hidden disabled="true" >
             <label for="sub" class="custom-file-upload">
                 Загрузить
             </label>
+            <script>
+                document.querySelector("input[type=file]").onchange = ({
+                  target: { value },
+                }) => {
+                  document.querySelector("input[type=submit]").disabled = !value;
+                };
+              </script>
         </form>
     </div>
 

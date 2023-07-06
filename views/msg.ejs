@@ -75,6 +75,7 @@
 </script>
 <ul id="messages">
     <% console.log(mess);
+    let time;
     for(let i = 0; i < mess.length; i++){
         let a = new Array;
         a.push(mess[i].User);
@@ -89,9 +90,14 @@
             var arrayOfStrings = stringToSplit.split(separator);
             return arrayOfStrings;
             }
+        let longtime = mess[i].created_at
+        console.log('longtime')
+        var options = { hour: 'numeric', minute: 'numeric' };
+        let time = (longtime.toLocaleTimeString("en-GB", options));
+        console.log(time)
         var onlyname = splitString(name, space); 
 %>
-            <li class="<%if(mess[i].user_id == sess) {%>your<% del = true } else {%>ny<%}%>"><span class="nickname">&<%=avatar%> <%=onlyname[0]%>: </span><%= mess[i].text %> <span class="sendtime"><%=mess[i].created_at %></span> <% if (del == true) {%>
+            <li class="<%if(mess[i].user_id == sess) {%>your<% del = true } else {%>ny<%}%>"><span class="nickname">&<%=avatar%> <%=onlyname[0]%>: </span><%= mess[i].text %>ㅤ<span class="sendtime"><%=time%></span> <% if (del == true) {%>
                 <form action="/delmsg" method="post" class="delma" id="delma">
                 <input type="text" name="msgid" value="<%=mess[i].id%>" hidden>
                 <div id="block__btn" class="block__btn"><button type="submit" id="delm" class="delm"><img src="img/bin.png" alt="/" class="image_bin"></button>
@@ -153,7 +159,7 @@
                 item.innerHTML += msg.content;
                 let spantime = document.createElement('span');
                 spantime.classList.add('sendtime');
-                spantime.innerText = (' ' + nowtime);
+                spantime.innerText = ('ㅤ  ' + nowtime);
                 item.appendChild(spantime);
                 // item.textContent = text;
                 // console.log(sessname);

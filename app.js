@@ -506,9 +506,10 @@ app.post('/deleteof', isAuth, isAdmin, async (req, res) => {
     res.redirect('/');
 });
 app.post('/delmsg', async (req, res) => {
+    const { msgid } = req.body;
     await prisma.message.delete({
         where: {
-            id: msgid
+            id: Number(msgid)
         }
     })
     res.redirect('/msg');
@@ -733,6 +734,7 @@ app.get('/home/:id', async (req, res) => {
                 'admin': req.session.admin,
                 'promocode': promocode,
                 'Items': data,
+                'many': dot.length,
                 'name': req.session.name,
                 'vkid': req.session.vkid,
                 'userId': req.session.id,

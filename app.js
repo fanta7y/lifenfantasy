@@ -71,8 +71,6 @@ io.on('connection', (socket, req, res) => {
                 recipient: 'team',
             },
         })
-        console.log(msg);
-        console.log('msg');
         io.emit('chat message', {
             'emoji': msg.emoji,
             'content': msg.content,
@@ -93,16 +91,11 @@ app.get('/msg', isAuth, async (req, res) => {
         }
     })
     function splitString(stringToSplit) {
-        // console.log('"' + stringToSplit + '"');
         var arrayOfStrings = stringToSplit.split(" ");
         return arrayOfStrings;
         }
     let name = splitString(req.session.name);
-    console.log(name);
-    console.log(msg);
-    console.log("data is really up");
     active = 'pass';
-    console.log(req.session);
         res.render('msg', {
             'sess': req.session.vkid,
             'sessname': name[0],
@@ -154,10 +147,6 @@ app.get('/msg', isAuth, async (req, res) => {
             
     let active;
     app.post('/offer', upload.single('file'), async (req, res, next) => {
-        console.log('_____________')
-        console.log(req.body.name);
-        console.log(req.body.text);
-        console.log(req.file.originalname);
         const { name, text, author, location_id } = req.body;
         await prisma.offer.create({
             data: {
@@ -187,7 +176,6 @@ async function index(promocode, mirror, req, res){
     });
     const off = await prisma.Offer.findMany({
     });
-    console.log(item);
     res.render('index', {
         'all': true,
         'many': off.length,
@@ -352,9 +340,6 @@ app.post('/reg', (req, res) => {
         let salt = 10;
         const { username, vkid, userpass, phone, Gender, text, emoji, date, private} = req.body;
         bcrypt.hash(userpass, salt, async (err, password) => {
-            console.log(password);
-            console.log(Gender);
-            console.log(phone);
                     await prisma.user.create({
                         data: {
                             username: username,
@@ -376,8 +361,6 @@ app.post('/reg', (req, res) => {
                     })
                     let data = [];
                     data.push(a);
-                            console.log(data);
-                            console.log('data');
                             req.session.admin = data[0].private;
                             req.session.name = data[0].name;
                             req.session.vkid = data[0].vkid;
@@ -415,16 +398,12 @@ app.post('/login', async (req, res) => {
             vkid: req.body.vkid,
         }
     }));
-    console.log(data);
-    console.log("data up");
+    
             if(data[0] != null) {
             bcrypt.compare(req.body.pass, data[0].password, (err, result) => {
-                console.log(result);
             
-            console.log(data);
+            
         if(result) {
-            console.log(data[0].Phone);
-            console.log('Hi!')
             req.session.admin = data[0].private;
             req.session.name = data[0].username;
             req.session.vkid = data[0].vkid;
@@ -542,7 +521,7 @@ app.get('/page/:id', async (req, res) => {
             vkid: req.params.id,
         }
     });
-    console.log(data);
+    
     res.render('page', {
         'userdata': data,
         'params': req.params.id,
@@ -583,8 +562,6 @@ app.get('/items/:id', async (req, res) => {
     b = b.map(el => {
         return el.category;
     });
-    console.log(b);
-    console.log("DATA сверху")
         res.render('item', {
             'thisa': b,
             'params': req.params.id,
@@ -609,18 +586,14 @@ app.get('/catto/:id', isAuth, async (req,res) => {
             item_id: Number(req.params.id)
         },
     });
-    console.log(item);
     item = item.map(el => {
         return el.category_id;
     });
-    console.log(item);
     let data = await prisma.category.findMany({
         where: {
             id: { in: item }
         }
     });
-    console.log(data);
-    console.log("data ^");
     let notin = await prisma.category.findMany({
         where: {
             NOT:  {
@@ -630,7 +603,6 @@ app.get('/catto/:id', isAuth, async (req,res) => {
             }
         }
     });
-    console.log("data" + data + "notin:" + notin);
     res.render('numb', {
         'data': data,
         'notin': notin,
@@ -655,8 +627,6 @@ app.post('/catadd', async (req, res) => {
     cats = req.body.catID;
     }
     let items = req.body.id;
-    console.log(cats);
-    console.log(cats != undefined);
     if(cats != undefined) {
         let b = new Array;
         let a = new Array;
@@ -666,7 +636,6 @@ app.post('/catadd', async (req, res) => {
             a.push(b);
             b = [];
         }
-        console.log(a);
         await prisma.itemRelCategory.deleteMany({
             where: {
                item_id: Number(items)
@@ -707,9 +676,6 @@ app.get('/home/:id', async (req, res) => {
     want = want.map(el => {
         return el.item_id;
     });
-
-    console.log(want);
-    console.log('every time up)')
     if(want.length == 0 || want == '') {
         mirror = 'Ошибка: В данной категории нет объектов!';
         index(promocode, mirror, req, res);

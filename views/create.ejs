@@ -1,0 +1,20 @@
+<%- include('../particle/header.ejs') %>
+<style>
+body{
+background-color: #39065A;
+background-image: none !important;
+}
+</style>
+<h3>Hello World</h3>
+<form action="createstep">
+	<input type="color" value="#39065A">
+<script>
+document.querySelector('input[type=color]').addEventListener('input', function(){
+    document.body.style.backgroundColor = this.value;
+  })
+</script>
+<input type="text" name="name" placeholder="Имя шага">
+<input type="file" accept="video/*">
+<textarea name="text" placeholder="Информация/Конспект"></textarea>
+</form>
+<%- include('../particle/footer.ejs') %>

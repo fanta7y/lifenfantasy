@@ -21,7 +21,7 @@ model Item {
   location    User              @relation(fields: [location_id], references: [vkid])
   location_id String
   categories  ItemRelCategory[]
-  Steps       Step[]
+
   @@map("items")
 }
 
@@ -91,14 +91,5 @@ model Offer {
 
   @@map("offers")
 }
-model Step {
-  id	      Int      @id @default(autoincrement())
-  item_id     Int
-  Item	      Item     @relation(fields: [item_id], references: [id])
-  Name        String   @db.VarChar(255)
-  Text	      String   @db.Text
-  Image       String   @db.VarChar(255)
-  Material    String   @db.VarChar(255)
-
-  @@map("steps")
+model Course { id Int @id @default(autoincrement())
 }

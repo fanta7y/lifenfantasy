@@ -1,0 +1,15 @@
+<%- include('../particle/header.ejs') %>
+<style>
+body{
+	padding-top: 0;
+	background-image:none !important;
+	background-color: purple;
+}
+
+</style>
+<h3>Hello World</h3>
+<script>
+<h3>Hello World</h3>
+
+</script>
+<%- include('../particle/footer.ejs') %>

@@ -49,7 +49,7 @@ app.set('view engine', 'ejs');
 //Путь к директории файлов отображения контента
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({extended: true}));
-server.listen(1313, "0.0.0.0", () => {
+server.listen(8330, "0.0.0.0", () => {
     console.log('Запуск сервера...');
     setTimeout(function() {
         console.log('Сервер запущен');
@@ -711,4 +711,10 @@ app.get('/home/:id', async (req, res) => {
                 'auth': req.session.auth,
         });
     }
+});
+app.get('/create', isAuth, async (req, res) => {
+	res.render('create', {
+	act: index,
+	auth: req.session.auth
+});
 });

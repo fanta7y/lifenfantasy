@@ -4,9 +4,9 @@
     <p><%= userdata.Info %></p>
     <% if(params == vkid) { %>
         <h1 class="money"><%=bal%> &#x20bd;</h1>
-        <form action="/msg" class="inlineform">
-            <button type="submit" class="pla">Сообщения</button>
-        </form>
+            <a href="/msg">
+            <button class="pla">Сообщения</button>
+        </a>
         <form action="/logout" method="post" class="inlineform">
             <% if(auth == true) {%><button type="submit" class="pla">Выйти</button><% } %>
         </form>

@@ -58,7 +58,7 @@ model User {
   Info       String    @db.Text
   Emoji      String    @db.VarChar(255)
   date       String    @db.VarChar(255)
-  private    String    @db.VarChar(255)
+  private    Int
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now())
   Message    Message[]
@@ -111,6 +111,7 @@ model Course {
   Item      Item     @relation(fields: [item_id], references: [id])
   Color     String   @db.VarChar(255)
   Price     Int
+
 }
 model Operation {
   id	      Int      @id @default(autoincrement())

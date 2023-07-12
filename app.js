@@ -8,7 +8,8 @@ const multer = require('multer');
 const mysql = require('mysql');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-let promocode = '17F-SKWNH&-L45W5M-201X';
+let promocode = 'RUdKG%7$hXPI%b3lZcXc';
+let promo = 1;
 require('dotenv').config();
 let storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -23,7 +24,9 @@ const app = express();
 const session = require('express-session');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
+const banned = ['192.168.0.208'];
 const io = new Server(server);
+
 function isAuth (req, res, next) {
     if (req.session.auth) {
         req.session.error = false;
@@ -33,7 +36,7 @@ function isAuth (req, res, next) {
     }
 }
 function isAdmin(req, res, next) {
-    if (req.session.admin == promocode) {
+    if (req.session.admin == 1) {
         let err = false;
         next();
     } else {
@@ -61,6 +64,16 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+function isAllowed(arr, ip, res, next) {
+    console.log('ban');
+    for (let i = 0; i < arr.length; i++) {
+        if (ip == arr[i]) {
+            res.render('banned')
+        } else {
+            next
+        }
+    }
+}
 io.on('connection', (socket, req, res) => {
     socket.on('chat message', async (msg) => {
         await prisma.message.create({
@@ -172,7 +185,9 @@ app.get('/msg', isAuth, async (req, res) => {
 app.get('/page', (req, res) => {
 res.redirect('/page/' + req.session.vkid);
 })
-async function index(promocode, mirror, req, res){
+async function index(promo, mirror, req, res){
+    console.log(req.socket.remoteAddress);
+    isAllowed(banned, req.socket.remoteAddress, res);
     const item = await prisma.item.findMany({
         include: {
             location: true,
@@ -201,21 +216,23 @@ async function index(promocode, mirror, req, res){
         'gender': req.session.gender,
         'auth': req.session.auth,
         'admin': req.session.admin,
-        'promocode': promocode,
+        'promocode': promo,
         'act': "index",
         'dot': (cats) ? cats : {}
                 
     });
 }
     app.get('/', (req, res) => {
+        console.log(banned);
         index(promocode, false, req, res);
     });
 
 app.get('/photo', isAuth, (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'app';
     res.render('form', {
         'admin': req.session.admin,
-        'promocode': promocode,
+        'promocode': promo,
         'act': active,
         'vkid': req.session.vkid,
         'auth': req.session.auth,
@@ -235,6 +252,7 @@ app.get('/photo', isAuth, (req,res) => {
 // 'gender': req.session.gender,
 // 'auth': req.session.auth,
 app.get('/news-video', (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'nv';
     res.render('news-video', {
         'act': active,
@@ -251,6 +269,7 @@ app.get('/news-video', (req,res) => {
 })
 
 app.get('/news-post', (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'np';
     res.render('news-post', {
         'act': active,
@@ -269,6 +288,7 @@ app.get('/news-post', (req,res) => {
 })
 
 app.get('/app', (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'app';
     res.render('app', {
         'act': active,
@@ -285,6 +305,7 @@ app.get('/app', (req,res) => {
     });
 });
 app.post('/delete', isAuth, isAdmin, async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     await prisma.itemRelCategory.deleteMany({
         where: {
             item_id: Number(req.body.id)
@@ -303,6 +324,7 @@ app.post('/delete', isAuth, isAdmin, async (req, res) => {
     res.redirect('/');
 });
 app.post('/update', isAdmin, async (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     let source = Number(req.body.id);
     const { title, text, id } = req.body;
     await prisma.item.update({
@@ -315,6 +337,7 @@ app.post('/update', isAdmin, async (req,res) => {
     res.redirect('/');
 });
 app.get('/passport/reg', (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'pass';
     res.render('reg', {
         'error': false,
@@ -333,6 +356,7 @@ app.get('/passport/reg', (req,res) => {
     );
 });
 app.get('/passport/input', (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     active = 'pass';
     let loginerr = '';
     res.render('input', {
@@ -352,10 +376,17 @@ app.get('/passport/input', (req,res) => {
     );
 });
 app.post('/reg', (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     if(req.body.vkid != '' && req.body.username != '' && req.body.userpass != '' && req.body.phone != '' && req.body.date != '') {
         let salt = 10;
         const { username, vkid, userpass, phone, Gender, text, emoji, date, private} = req.body;
         bcrypt.hash(userpass, salt, async (err, password) => {
+            let prompt = new Number;
+            if(private == promocode) {
+                prompt = 1;
+            } else {
+                prompt = 0;
+            }
                     await prisma.user.create({
                         data: {
                             username: username,
@@ -366,7 +397,7 @@ app.post('/reg', (req, res) => {
                             Info: text,
                             Emoji: emoji,
                             date: date,
-                            private: private,
+                            private: prompt,
                             Balance: 0
                         }
                     });
@@ -409,8 +440,10 @@ app.post('/reg', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     let error = false;
     let data = new Array;
+    console.log(req.socket.remoteAddress);
     data.push(await prisma.user.findFirst({
         where: {
             vkid: req.body.vkid,
@@ -468,6 +501,7 @@ app.post('/login', async (req, res) => {
     });  
 
 app.post('/logout', isAuth, (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     req.session.auth = false;  
     res.redirect('/');
 });
@@ -475,13 +509,14 @@ app.post('/logout', isAuth, (req, res) => {
     
 
 app.get('/offerlist',  async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     const data = await prisma.Offer.findMany({
 
     });
         active = 'index';
         res.render('offers', {
             'admin': req.session.admin,
-            'promocode': promocode,
+            'promocode': promo,
             'error': req.session.error,
             'name': req.session.name,
             'vkid': req.session.vkid,
@@ -497,6 +532,7 @@ app.get('/offerlist',  async (req, res) => {
     }
     );
 app.post('/deleteof', isAuth, isAdmin, async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     await prisma.offer.delete({
         where: {
             id: Number(req.body.id)
@@ -505,6 +541,7 @@ app.post('/deleteof', isAuth, isAdmin, async (req, res) => {
     res.redirect('/');
 });
 app.post('/delmsg', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     const { msgid } = req.body;
     await prisma.message.delete({
         where: {
@@ -515,6 +552,7 @@ app.post('/delmsg', async (req, res) => {
 });
 
 app.post('/cat', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     if(req.body.name != '') {
     await prisma.category.create({
         data: {
@@ -530,12 +568,14 @@ app.post('/cat', async (req, res) => {
     }
 });
 app.get('/catform', isAuth, (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     res.render('catadd', {
         'act': "app",    
         'auth': req.session.auth
     });
 })
 app.get('/page/:id', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     let data = await prisma.user.findFirst({
         where: {
             vkid: req.params.id,
@@ -546,7 +586,7 @@ app.get('/page/:id', async (req, res) => {
         'userdata': data,
         'params': req.params.id,
         'admin': req.session.admin,
-        'promocode': promocode,
+        'promocode': promo,
         'act': "pass",
         'Items': data,
         'name': req.session.name,
@@ -562,6 +602,7 @@ app.get('/page/:id', async (req, res) => {
 }); 
 
 app.get('/items/:id', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     const { id } = req.params;
     const data = await prisma.item.findFirst({
         where: {
@@ -587,7 +628,7 @@ app.get('/items/:id', async (req, res) => {
             'thisa': b,
             'params': req.params.id,
             'admin': req.session.admin,
-            'promocode': promocode,
+            'promocode': promo,
             'act': "index",
             'Items': a,
             'name': req.session.name,
@@ -602,6 +643,7 @@ app.get('/items/:id', async (req, res) => {
 });
 
 app.get('/catto/:id', isAuth, async (req,res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     let item = await prisma.itemRelCategory.findMany({
         where: {
             item_id: Number(req.params.id)
@@ -629,7 +671,7 @@ app.get('/catto/:id', isAuth, async (req,res) => {
         'notin': notin,
         'params': req.params.id,
         'admin': req.session.admin,
-        'promocode': promocode,
+        'promocode': promo,
         'Items': data,
         'name': req.session.name,
         'vkid': req.session.vkid,
@@ -643,6 +685,7 @@ app.get('/catto/:id', isAuth, async (req,res) => {
     });
 });
 app.post('/catadd', async (req, res) => {
+    isAllowed(banned, req.socket.remoteAddress, res);
     let cats = true;
     if (req.body.catID != []) {
     cats = req.body.catID;
@@ -718,7 +761,7 @@ app.get('/home/:id', async (req, res) => {
                 'act': 'index',
                 'params': req.params.id,
                 'admin': req.session.admin,
-                'promocode': promocode,
+                'promocode': promo,
                 'Items': data,
                 'many': dot.length,
                 'name': req.session.name,
@@ -757,7 +800,7 @@ app.get('/fill', isAuth, (req, res) => {
         auth: req.session.auth
     })
 })
-app.post('/fill', isAuth, async (req, res) => {
+app.post('/fill', isAuth, isAdmin, async (req, res) => {
     const { userid } = req.session
     const {summ} = req.body;
     await prisma.user.update({

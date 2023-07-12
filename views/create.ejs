@@ -1,20 +1,90 @@
 <%- include('../particle/header.ejs') %>
+<% console.log(data[0].Color)%>
 <style>
 body{
-background-color: #39065A;
+background-color:     <%=data[0].Color%>;
 background-image: none !important;
+margin: 0%;
+}
+h1{
+    color:    <%=data[0].Color%>;
+    text-align: center;
+    margin: 0%;
+    background-color: rgba(237, 237, 237, 0.54);
+    position: inherit;
+    margin-top: -20px;
+    margin-left: -15px;
+    padding-top: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+}
+input[type=text]{
+    width: 50% !important;
+    text-align: center;
+}
+textarea {
+    width:50%;
+    padding:15px;
+    border-radius:15px;
+    border:0;
+    box-shadow: 5px 4px 4px #181818c7;
+    height:150px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    display: block;
+}
+.black{
+    display: block;
+    text-align: center;
+}
+.just{
+    display: flex;
+    justify-content: center;
+}
+input[type=file]{
+    display: block;
+    background-color: ;
+}
+input[type=file]{
+    display: none;
+}
+.file_btn{
+    background-color: #079e1b;
+    padding: 15px;
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: 9px;
 }
 </style>
-<h3>Hello World</h3>
-<form action="createstep">
-	<input type="color" value="#39065A">
+<%console.log(data);%>
+<% let item = [data[0].Item]; %>
+<h1 class="class" id="h1"><%=item[0].title%></h1>
+<form action="/createstep" method="post">
+	<input type="color" value="<%=data[0].Color%>">
 <script>
 document.querySelector('input[type=color]').addEventListener('input', function(){
-    document.body.style.backgroundColor = this.value;
-  })
+        document.body.style.backgroundColor = this.value;
+    })
 </script>
-<input type="text" name="name" placeholder="Имя шага">
-<input type="file" accept="video/*">
-<textarea name="text" placeholder="Информация/Конспект"></textarea>
+<div class="black">
+    <% if (Steps.length != 0) {
+        console.log('much steps'); %>
+        
+    <%} %>
+<h2 style="color: white">Добавление Шага 1</h2>
+<input type="text" name="name" placeholder="Имя шага"></div>
+<br>
+<div class="just">
+<textarea name="text" placeholder="Информация/Конспект"></textarea></div>
+<div class="just"><input type="button" class="file_btn" value="Загрузить видео" onclick="document.getElementById('file').click();"/><input type="file" accept="video/*" id="file"></div>
+<div class="just"><button type="submit" class="pla">Добавить Ещё Шаг </button></div>
+
+</div>
 </form>
+<video src="/video/"></video>
+<style>
+h1{
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+}
+</style>
 <%- include('../particle/footer.ejs') %>

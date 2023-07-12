@@ -23,7 +23,8 @@
         <p><%= Items[0].text %></p>
     </div>
     <img src="/uploads/<%= Items[0].filename %>" alt="/" class="plusimg">
-    <% if(admin == promocode) { %>
+    <%console.log(vkid);%>
+    <% if(admin == promocode || Items[0].location_id == vkid) { %>
         <form action="/update" method="POST">
             <input value="<%= Items[0].id %>" type="hidden" name="id"><br>
             Название <br>
@@ -33,5 +34,8 @@
             <button type="submit" class="pla">Изменить</button>
         </form>
         <a href="/catto/<%=params%>">Добавить категорию</a>
+    <%}%>
+    <% if (Items[0].location_id == vkid) { %>
+        <a href="/create/<%=params%>">Редактировать курс (пошаговый конспект)</a>
     <%}%>
 <%- include('../particle/footer.ejs') %>

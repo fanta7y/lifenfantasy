@@ -21,7 +21,7 @@ model Item {
   location    User              @relation(fields: [location_id], references: [vkid])
   location_id String
   categories  ItemRelCategory[]
-  Steps       Step[]
+  Course       Course[]
   @@map("items")
 }
 
@@ -63,7 +63,8 @@ model User {
   updated_at DateTime  @default(now())
   Message    Message[]
   Item       Item[]
-
+  Balance    Int
+  Operations Operation[]
   @@map("users")
 }
 
@@ -94,11 +95,28 @@ model Offer {
 model Step {
   id	      Int      @id @default(autoincrement())
   item_id     Int
-  Item	      Item     @relation(fields: [item_id], references: [id])
+  Number      Int
+  Course	      Course     @relation(fields: [item_id], references: [id])
   Name        String   @db.VarChar(255)
   Text	      String   @db.Text
   Image       String   @db.VarChar(255)
   Material    String   @db.VarChar(255)
 
   @@map("steps")
+}
+model Course {
+  id	      Int      @id @default(autoincrement())
+  Steps Step[]
+  item_id   Int
+  Item      Item     @relation(fields: [item_id], references: [id])
+  Color     String   @db.VarChar(255)
+  Price     Int
+}
+model Operation {
+  id	      Int      @id @default(autoincrement())
+  type      String   @db.VarChar(255)
+  summ      Int
+  from      Int
+  From      User    @relation(fields: [from], references: [id])
+  to        Int
 }

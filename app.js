@@ -106,8 +106,6 @@ app.get('/msg', isAuth, async (req, res) => {
             'ava': req.session.emoji,
         });
         });
-
-    // });
     app.post('/upload', isAuth, upload.single('file'), async (req, res, next) => {
         const { name, text, location_id } = req.body;
         const { originalname } = req.file;
@@ -117,6 +115,19 @@ app.get('/msg', isAuth, async (req, res) => {
                     text,
                     filename: originalname,
                     location_id: location_id,
+                }
+            });
+            let data = [await prisma.item.findFirst({
+                where: { filename: originalname,
+                title: name,
+                location_id: location_id
+             }
+            })];
+            await prisma.course.create({
+                data: {
+                    item_id: data[0].id,
+                    Color: '#39065A',
+                    Price: 0,
                 }
             });
             res.redirect('/');
@@ -183,7 +194,7 @@ async function index(promocode, mirror, req, res){
         'error': mirror,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -217,7 +228,7 @@ app.get('/photo', isAuth, (req,res) => {
 
 // 'name': req.session.name,
 // 'vkid': req.session.vkid,
-// 'id': req.session.id,
+// 'id': req.session.userid,
 // 'emoji': req.session.emoji,
 // 'userinfo': req.session.text,
 // 'tel': req.session.tel,
@@ -229,7 +240,7 @@ app.get('/news-video', (req,res) => {
         'act': active,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -245,7 +256,7 @@ app.get('/news-post', (req,res) => {
         'act': active,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -263,7 +274,7 @@ app.get('/app', (req,res) => {
         'act': active,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -275,6 +286,11 @@ app.get('/app', (req,res) => {
 });
 app.post('/delete', isAuth, isAdmin, async (req, res) => {
     await prisma.itemRelCategory.deleteMany({
+        where: {
+            item_id: Number(req.body.id)
+        }
+    })
+    await prisma.course.deleteMany({
         where: {
             item_id: Number(req.body.id)
         }
@@ -305,7 +321,7 @@ app.get('/passport/reg', (req,res) => {
         'act': active,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -324,7 +340,7 @@ app.get('/passport/input', (req,res) => {
         'act': active,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'id': req.session.id,
+        'id': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -350,7 +366,8 @@ app.post('/reg', (req, res) => {
                             Info: text,
                             Emoji: emoji,
                             date: date,
-                            private: private
+                            private: private,
+                            Balance: 0
                         }
                     });
                     let a = await prisma.user.findFirst({
@@ -364,12 +381,13 @@ app.post('/reg', (req, res) => {
                             req.session.admin = data[0].private;
                             req.session.name = data[0].name;
                             req.session.vkid = data[0].vkid;
-                            req.session.id = data[0].id;
+                            req.session.userid = data[0].id;
                             req.session.emoji = data[0].Emoji;
                             req.session.text = data[0].Info;
                             req.session.tel = data[0].Phone;
                             req.session.gender = data[0].Gender;
                             req.session.auth = true;
+                            req.session.bal = data[0].Balance;
 
                             res.redirect('/');
         });
@@ -379,7 +397,7 @@ app.post('/reg', (req, res) => {
             'error': 'Не оставляйте поля пустыми!',
             'name': req.session.name,
             'vkid': req.session.vkid,
-            'id': req.session.id,
+            'id': req.session.userid,
             'emoji': req.session.emoji,
             'userinfo': req.session.text,
             'tel': req.session.tel,
@@ -407,11 +425,12 @@ app.post('/login', async (req, res) => {
             req.session.admin = data[0].private;
             req.session.name = data[0].username;
             req.session.vkid = data[0].vkid;
-            req.session.id = data[0].id;
+            req.session.userid = data[0].id;
             req.session.emoji = data[0].Emoji;
             req.session.text = data[0].Info;
             req.session.tel = data[0].Phone;
             req.session.gender = data[0].Gender;
+            req.session.bal = data[0].Balance;
             req.session.auth = true;
             res.redirect('/');
         } else{
@@ -420,12 +439,13 @@ app.post('/login', async (req, res) => {
                 'act': active,
                 'name': req.session.username,
                 'vkid': req.session.vkid,
-                'id': req.session.id,
+                'id': req.session.userid,
                 'emoji': req.session.emoji,
                 'userinfo': req.session.text,
                 'tel': req.session.tel,
                 'gender': req.session.gender,
-                'auth': req.session.auth,        
+                'auth': req.session.auth,      
+                'bal': req.session.bal,  
                 'act': active,
             });
             }
@@ -436,7 +456,7 @@ app.post('/login', async (req, res) => {
                 'act': active,
                 'name': req.session.name,
                 'vkid': req.session.vkid,
-                'id': req.session.id,
+                'id': req.session.userid,
                 'emoji': req.session.emoji,
                 'userinfo': req.session.text,
                 'tel': req.session.tel,
@@ -465,7 +485,7 @@ app.get('/offerlist',  async (req, res) => {
             'error': req.session.error,
             'name': req.session.name,
             'vkid': req.session.vkid,
-            'id': req.session.id,
+            'id': req.session.userid,
             'emoji': req.session.emoji,
             'userinfo': req.session.text,
             'tel': req.session.tel,
@@ -531,12 +551,13 @@ app.get('/page/:id', async (req, res) => {
         'Items': data,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'userId': req.session.id,
+        'userId': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
         'gender': req.session.gender,
         'auth': req.session.auth,
+        'bal': req.session.bal,
     });
 }); 
 
@@ -571,7 +592,7 @@ app.get('/items/:id', async (req, res) => {
             'Items': a,
             'name': req.session.name,
             'vkid': req.session.vkid,
-            'userId': req.session.id,
+            'userId': req.session.userid,
             'emoji': req.session.emoji,
             'userinfo': req.session.text,
             'tel': req.session.tel,
@@ -612,7 +633,7 @@ app.get('/catto/:id', isAuth, async (req,res) => {
         'Items': data,
         'name': req.session.name,
         'vkid': req.session.vkid,
-        'userId': req.session.id,
+        'userId': req.session.userid,
         'emoji': req.session.emoji,
         'userinfo': req.session.text,
         'tel': req.session.tel,
@@ -672,7 +693,6 @@ app.get('/home/:id', async (req, res) => {
         }
     })
     let data = (await prisma.item.findMany()).length;
-    if (err) console.log(err);
     want = want.map(el => {
         return el.item_id;
     });
@@ -703,7 +723,7 @@ app.get('/home/:id', async (req, res) => {
                 'many': dot.length,
                 'name': req.session.name,
                 'vkid': req.session.vkid,
-                'userId': req.session.id,
+                'userId': req.session.userid,
                 'emoji': req.session.emoji,
                 'userinfo': req.session.text,
                 'tel': req.session.tel,
@@ -712,9 +732,41 @@ app.get('/home/:id', async (req, res) => {
         });
     }
 });
-app.get('/create', isAuth, async (req, res) => {
-	res.render('create', {
+app.get('/create/:id', isAuth, async (req, res) => {
+	let data = await prisma.course.findMany({
+        where: {
+            item_id: Number(req.params.id)
+        }
+        ,include: {
+            Item: true,
+            Steps: true,
+        }
+    });
+    console.log(data[0].Color);
+    res.render('create', {
 	act: index,
-	auth: req.session.auth
+	auth: req.session.auth,
+    data: data,
+    params: req.params.id,
+    Steps: data[0].Steps,
 });
 });
+app.get('/fill', isAuth, (req, res) => {
+    res.render('application', {
+        act: 'pass',
+        auth: req.session.auth
+    })
+})
+app.post('/fill', isAuth, async (req, res) => {
+    const { userid } = req.session
+    const {summ} = req.body;
+    await prisma.user.update({
+        where: { id: userid },
+        data: {Balance: {increment: Number(summ)}}
+      })
+    let bal = [await prisma.user.findFirst({
+        where: { id: userid }
+    })];
+    req.session.bal = bal[0].Balance
+    res.redirect('/page/' + req.session.vkid);
+})

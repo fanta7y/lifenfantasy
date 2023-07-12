@@ -8,13 +8,18 @@
                     <input type="text" class="form-control" name="vkid" id="login">
                 </div>
                 <div>
+                    <style>
+                        input[type=text]{
+                            width: 100%;
+                        }
+                        textarea{
+                            width: 100%;
+                        }
+                        </style>
                     Пароль <br>
                     <input type="password" name="pass" id="pass">
                 </div>
-                <input type="submit" id="sub" value="Загрузить" hidden>
-                <label for="sub" class="custom-file-upload">
-                    Войти
-                </label>
+                <button type="submit" class="pla">Войти</button>
             </form>
             <% if (error != false) {%>
 				<div class="error"><%=error %></div>

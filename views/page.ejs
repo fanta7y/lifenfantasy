@@ -3,6 +3,7 @@
     <h1>&<%=userdata.Emoji%><%= userdata.username %></h1>
     <p><%= userdata.Info %></p>
     <% if(params == vkid) { %>
+        <h1 class="money"><%=bal%> &#x20bd;</h1>
         <form action="/msg" class="inlineform">
             <button type="submit" class="pla">Сообщения</button>
         </form>

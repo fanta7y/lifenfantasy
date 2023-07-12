@@ -395,7 +395,7 @@ div.parentyt {
 }
 
 textarea {
-  width:100%;
+  width:50%;
   resize: vertical;
   padding:15px;
   border-radius:15px;
@@ -411,7 +411,7 @@ input[type=text] {
   box-shadow: 5px 4px 4px #181818c7;
   border-radius:10px;
   margin-bottom: 5px;
-  width: 100%;
+  width: 50%;
   font-family: Georgia, 'Times New Roman', Times, serif;
 }
 input[type=radio] {
@@ -678,5 +678,12 @@ form.delma{
   width: 39px;
 }
 .objects{
+  text-align: center;
+}
+.money{
+  color: sandybrown;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+.dated{
   text-align: center;
 }

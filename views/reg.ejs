@@ -56,17 +56,19 @@
 				</div>
 				<div>
 					<br>
-					<input type="submit" id="sub" value="Загрузить" hidden>
-					<label for="sub" class="custom-file-upload">
-						Отправить
-					</label>
-					<input type="reset" id="res" value="Очистить" hidden>
-					<label for="res" class="custom-file-reset">
-						Очистить
-					</label>
+					<button type="submit" class="pla">Отправить</button>
+					<button type="reset" class="pla">Загрузить</button>
 				</div>
+				<br>
 			</form>
 
 		</div>
-
+		<style>
+		input[type=text]{
+			width: 100%;
+		}
+		textarea{
+			width: 100%;
+		}
+		</style>
 		<%- include('../particle/footer.ejs') %>
